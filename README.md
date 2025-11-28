@@ -150,9 +150,6 @@ web-pdf/
 
 - [html2pdf.js](https://github.com/eKoopmans/html2pdf.js) - PDF 生成函式庫
 - [Google Fonts](https://fonts.google.com/) - Noto Sans TC 字體
-- 參考台灣勞動部薪資明細表範例格式
+- 薪資明細表範例格式
 
 ---
-
-如有任何問題或建議，歡迎提出 Issue 或 Pull Request！
-

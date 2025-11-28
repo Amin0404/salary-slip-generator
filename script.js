@@ -70,12 +70,7 @@ function getNumber(element) {
 }
 
 function formatCurrency(amount) {
-    return new Intl.NumberFormat('zh-TW', {
-        style: 'currency',
-        currency: 'TWD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }).format(amount);
+    return '$' + amount.toLocaleString('zh-TW');
 }
 
 function formatDate(dateString) {
@@ -192,178 +187,233 @@ function getFormData() {
     };
 }
 
-function createPDFTemplate(data) {
-    const template = document.createElement('div');
-    template.className = 'pdf-template';
-    template.style.cssText = `
-        display: block;
-        background: white;
-        color: #1a1a1a;
-        padding: 30px;
-        font-family: 'Noto Sans TC', sans-serif;
-        font-size: 12px;
-        line-height: 1.5;
-        width: 210mm;
-    `;
+function getPDFHtml(data) {
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: "Microsoft JhengHei", "微軟正黑體", "Noto Sans TC", sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #000;
+            background: #fff;
+            padding: 20px;
+        }
+        .title { 
+            text-align: center; 
+            font-size: 18px; 
+            font-weight: bold; 
+            margin-bottom: 15px; 
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-bottom: 12px; 
+        }
+        th, td { 
+            border: 1px solid #000; 
+            padding: 6px 8px; 
+            font-size: 11px;
+        }
+        th { 
+            background: #e0e0e0; 
+            font-weight: bold; 
+            text-align: center; 
+        }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .bg-light { background: #f5f5f5; }
+        .bg-gray { background: #e8e8e8; }
+        .total-box { 
+            max-width: 280px; 
+            margin: 15px auto; 
+        }
+        .total-box td { 
+            padding: 12px 15px; 
+            border: 2px solid #000; 
+        }
+        .net-amount { 
+            font-size: 18px; 
+            font-weight: bold; 
+        }
+        .note { 
+            font-size: 10px; 
+            margin-bottom: 8px; 
+        }
+        .vertical-text {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="title">${data.year}年${data.month}月薪資發放明細表</div>
     
-    template.innerHTML = `
-        <div style="text-align: center; margin-bottom: 20px;">
-            <h1 style="font-size: 20px; font-weight: 700; color: #1a1a1a; margin: 0;">
-                ${data.year}年${data.month}月薪資發放明細表
-            </h1>
-        </div>
-        
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+    <table>
+        <tr>
+            <td class="bg-light" style="width:10%"><strong>姓名</strong></td>
+            <td style="width:15%">${data.name}</td>
+            <td class="bg-light" style="width:10%"><strong>職位</strong></td>
+            <td style="width:15%">${data.position}</td>
+            <td class="bg-light" style="width:10%"><strong>入帳帳號</strong></td>
+            <td style="width:20%">${data.account}</td>
+            <td class="bg-light" style="width:10%"><strong>發薪日期</strong></td>
+            <td style="width:10%">${data.payDate}</td>
+        </tr>
+    </table>
+
+    <table>
+        <thead>
             <tr>
-                <td style="padding: 8px 10px; border: 1px solid #333; background: #f5f5f5; font-size: 12px;"><strong>姓名</strong></td>
-                <td style="padding: 8px 10px; border: 1px solid #333; font-size: 12px;">${data.name}</td>
-                <td style="padding: 8px 10px; border: 1px solid #333; background: #f5f5f5; font-size: 12px;"><strong>職位</strong></td>
-                <td style="padding: 8px 10px; border: 1px solid #333; font-size: 12px;">${data.position}</td>
-                <td style="padding: 8px 10px; border: 1px solid #333; background: #f5f5f5; font-size: 12px;"><strong>入帳帳號</strong></td>
-                <td style="padding: 8px 10px; border: 1px solid #333; font-size: 12px;">${data.account}</td>
-                <td style="padding: 8px 10px; border: 1px solid #333; background: #f5f5f5; font-size: 12px;"><strong>發薪日期</strong></td>
-                <td style="padding: 8px 10px; border: 1px solid #333; font-size: 12px;">${data.payDate}</td>
+                <th colspan="2">約定薪資結構</th>
+                <th colspan="2"></th>
+                <th colspan="2">應代扣項目</th>
             </tr>
-        </table>
-
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
-            <thead>
-                <tr>
-                    <th colspan="2" style="border: 1px solid #333; padding: 8px 10px; background: #e5e5e5; font-weight: 600; text-align: center;">約定薪資結構</th>
-                    <th colspan="2" style="border: 1px solid #333; padding: 8px 10px; background: #e5e5e5; font-weight: 600; text-align: center;"></th>
-                    <th colspan="2" style="border: 1px solid #333; padding: 8px 10px; background: #e5e5e5; font-weight: 600; text-align: center;">應代扣項目</th>
-                </tr>
-                <tr>
-                    <th style="border: 1px solid #333; padding: 8px 10px; background: #e5e5e5; font-weight: 600; text-align: center;">項目</th>
-                    <th style="border: 1px solid #333; padding: 8px 10px; background: #e5e5e5; font-weight: 600; text-align: center;">金額</th>
-                    <th style="border: 1px solid #333; padding: 8px 10px; background: #e5e5e5; font-weight: 600; text-align: center;">項目</th>
-                    <th style="border: 1px solid #333; padding: 8px 10px; background: #e5e5e5; font-weight: 600; text-align: center;">金額</th>
-                    <th style="border: 1px solid #333; padding: 8px 10px; background: #e5e5e5; font-weight: 600; text-align: center;">項目</th>
-                    <th style="border: 1px solid #333; padding: 8px 10px; background: #e5e5e5; font-weight: 600; text-align: center;">金額</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">底薪</td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right; min-width: 80px;">${data.baseSalary}</td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">平日加班費</td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right; min-width: 80px;">${data.weekdayOT}</td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">勞保費</td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right; min-width: 80px;">${data.laborInsurance}</td>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">伙食津貼</td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.mealAllowance}</td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">休假日加班費</td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.holidayOT}</td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">健保費</td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.healthInsurance}</td>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">全勤獎金</td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.attendanceBonus}</td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">休息日加班費</td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.restDayOT}</td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">職工福利金</td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.welfareFund}</td>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">職務津貼</td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.positionAllowance}</td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">未休特別休假工資</td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.unusedLeaveWage}</td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">勞工自願提繳退休金</td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.voluntaryPension}</td>
-                </tr>
-                <tr>
-                    <td rowspan="2" style="border: 1px solid #333; padding: 8px 10px; text-align: center; background: #f9f9f9; writing-mode: vertical-rl;">非固定支付項目</td>
-                    <td rowspan="2" style="border: 1px solid #333; padding: 8px 10px;"></td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">届期未補休折發工資</td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.expiredCompWage}</td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">事假</td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.personalLeave}</td>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid #333; padding: 8px 10px;"></td>
-                    <td style="border: 1px solid #333; padding: 8px 10px;"></td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">病假</td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.sickLeave}</td>
-                </tr>
-                <tr style="background: #f0f0f0; font-weight: 600;">
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">小計(A)</td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.subtotalA}</td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">小計(B)</td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.subtotalB}</td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">小計(C)</td>
-                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.subtotalC}</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <table style="margin: 20px auto; max-width: 300px; border-collapse: collapse;">
             <tr>
-                <td style="border: 2px solid #333; padding: 15px 20px; text-align: center;">
-                    <strong>實領金額</strong><br>
-                    (A)+(B)-(C)
-                </td>
-                <td style="border: 2px solid #333; padding: 15px 20px; text-align: center; font-size: 22px; font-weight: 700;">${data.netPay}</td>
+                <th>項目</th>
+                <th>金額</th>
+                <th>項目</th>
+                <th>金額</th>
+                <th>項目</th>
+                <th>金額</th>
             </tr>
-        </table>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="text-center">底薪</td>
+                <td class="text-right">${data.baseSalary}</td>
+                <td class="text-center">平日加班費</td>
+                <td class="text-right">${data.weekdayOT}</td>
+                <td class="text-center">勞保費</td>
+                <td class="text-right">${data.laborInsurance}</td>
+            </tr>
+            <tr>
+                <td class="text-center">伙食津貼</td>
+                <td class="text-right">${data.mealAllowance}</td>
+                <td class="text-center">休假日加班費</td>
+                <td class="text-right">${data.holidayOT}</td>
+                <td class="text-center">健保費</td>
+                <td class="text-right">${data.healthInsurance}</td>
+            </tr>
+            <tr>
+                <td class="text-center">全勤獎金</td>
+                <td class="text-right">${data.attendanceBonus}</td>
+                <td class="text-center">休息日加班費</td>
+                <td class="text-right">${data.restDayOT}</td>
+                <td class="text-center">職工福利金</td>
+                <td class="text-right">${data.welfareFund}</td>
+            </tr>
+            <tr>
+                <td class="text-center">職務津貼</td>
+                <td class="text-right">${data.positionAllowance}</td>
+                <td class="text-center">未休特別休假工資</td>
+                <td class="text-right">${data.unusedLeaveWage}</td>
+                <td class="text-center">勞工自願提繳退休金</td>
+                <td class="text-right">${data.voluntaryPension}</td>
+            </tr>
+            <tr>
+                <td rowspan="2" class="text-center bg-light vertical-text">非固定支付項目</td>
+                <td rowspan="2"></td>
+                <td class="text-center">届期未補休折發工資</td>
+                <td class="text-right">${data.expiredCompWage}</td>
+                <td class="text-center">事假</td>
+                <td class="text-right">${data.personalLeave}</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td class="text-center">病假</td>
+                <td class="text-right">${data.sickLeave}</td>
+            </tr>
+            <tr class="bg-gray">
+                <td class="text-center"><strong>小計(A)</strong></td>
+                <td class="text-right"><strong>${data.subtotalA}</strong></td>
+                <td class="text-center"><strong>小計(B)</strong></td>
+                <td class="text-right"><strong>${data.subtotalB}</strong></td>
+                <td class="text-center"><strong>小計(C)</strong></td>
+                <td class="text-right"><strong>${data.subtotalC}</strong></td>
+            </tr>
+        </tbody>
+    </table>
 
-        <div style="margin-top: 20px;">
-            <p style="font-size: 11px; margin-bottom: 10px;">＊備註：貴事業單位如有實施特別休假遞延或加班補休制度，請參考下列表格使用：</p>
-            <table style="width: 100%; border-collapse: collapse;">
-                <tr>
-                    <th colspan="2" style="border: 1px solid #333; padding: 6px 8px; background: #e5e5e5; text-align: center; font-weight: 600; font-size: 11px;">特別休假</th>
-                    <th colspan="2" style="border: 1px solid #333; padding: 6px 8px; background: #e5e5e5; text-align: center; font-weight: 600; font-size: 11px;">加班補休</th>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">請休期間：${data.leavePeriod}</td>
-                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;"></td>
-                    <td colspan="2" style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">勞雇雙方約定之補休期限：${data.compDeadline}</td>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">經過遞延的特別休假日數</td>
-                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">${data.deferredLeaveDays}日</td>
-                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">至上月止未休補休時數（Ⅰ）</td>
-                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">${data.prevMonthComp}小時</td>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">今年可休的特別休假日數</td>
-                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">${data.annualLeaveDays}日</td>
-                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">本月選擇補休時數（Ⅱ）</td>
-                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">${data.thisMonthCompChoice}小時</td>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">今年已休的特別休假日數</td>
-                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">${data.usedLeaveDays}日</td>
-                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">本月已補休時數（Ⅲ）</td>
-                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">${data.thisMonthCompUsed}小時</td>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">今年未休的特別休假日數</td>
-                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">${data.remainingLeaveDays}日</td>
-                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">届期未休補折發工資時數（Ⅳ）</td>
-                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">${data.expiredCompHours}小時</td>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">今年特別休假的請休期日</td>
-                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">${data.leaveDeadline}</td>
-                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">至本月止未休補休時數<br>（Ⅰ）+（Ⅱ）-（Ⅲ）-（Ⅳ）</td>
-                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">${data.remainingCompHours}小時</td>
-                </tr>
-            </table>
-        </div>
-    `;
+    <table class="total-box">
+        <tr>
+            <td class="text-center">
+                <strong>實領金額</strong><br>(A)+(B)-(C)
+            </td>
+            <td class="text-center net-amount">${data.netPay}</td>
+        </tr>
+    </table>
+
+    <p class="note">＊備註：貴事業單位如有實施特別休假遞延或加班補休制度，請參考下列表格使用：</p>
     
-    return template;
+    <table>
+        <tr>
+            <th colspan="2">特別休假</th>
+            <th colspan="2">加班補休</th>
+        </tr>
+        <tr>
+            <td>請休期間：${data.leavePeriod}</td>
+            <td></td>
+            <td colspan="2">勞雇雙方約定之補休期限：${data.compDeadline}</td>
+        </tr>
+        <tr>
+            <td>經過遞延的特別休假日數</td>
+            <td class="text-center">${data.deferredLeaveDays}日</td>
+            <td>至上月止未休補休時數（Ⅰ）</td>
+            <td class="text-center">${data.prevMonthComp}小時</td>
+        </tr>
+        <tr>
+            <td>今年可休的特別休假日數</td>
+            <td class="text-center">${data.annualLeaveDays}日</td>
+            <td>本月選擇補休時數（Ⅱ）</td>
+            <td class="text-center">${data.thisMonthCompChoice}小時</td>
+        </tr>
+        <tr>
+            <td>今年已休的特別休假日數</td>
+            <td class="text-center">${data.usedLeaveDays}日</td>
+            <td>本月已補休時數（Ⅲ）</td>
+            <td class="text-center">${data.thisMonthCompUsed}小時</td>
+        </tr>
+        <tr>
+            <td>今年未休的特別休假日數</td>
+            <td class="text-center">${data.remainingLeaveDays}日</td>
+            <td>届期未休補折發工資時數（Ⅳ）</td>
+            <td class="text-center">${data.expiredCompHours}小時</td>
+        </tr>
+        <tr>
+            <td>今年特別休假的請休期日</td>
+            <td class="text-center">${data.leaveDeadline}</td>
+            <td>至本月止未休補休時數<br>（Ⅰ）+（Ⅱ）-（Ⅲ）-（Ⅳ）</td>
+            <td class="text-center">${data.remainingCompHours}小時</td>
+        </tr>
+    </table>
+</body>
+</html>`;
 }
 
 function showPreview() {
     const data = getFormData();
-    const template = createPDFTemplate(data);
+    const htmlContent = getPDFHtml(data);
+    
+    // Create iframe for preview
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'width: 100%; height: 100%; border: none; background: white;';
+    
     pdfContent.innerHTML = '';
-    pdfContent.appendChild(template);
+    pdfContent.appendChild(iframe);
+    
+    // Write content to iframe
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+    iframeDoc.open();
+    iframeDoc.write(htmlContent);
+    iframeDoc.close();
+    
     previewModal.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
@@ -375,50 +425,75 @@ function closePreview() {
 
 async function exportPDF() {
     const data = getFormData();
-    const template = createPDFTemplate(data);
+    const htmlContent = getPDFHtml(data);
     
-    // Create a container for rendering
-    const container = document.createElement('div');
-    container.className = 'pdf-render-container';
-    container.style.cssText = 'position: fixed; left: 0; top: 0; z-index: 9999; background: white;';
-    container.appendChild(template);
-    document.body.appendChild(container);
+    // Create a hidden iframe
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position: fixed; left: 0; top: 0; width: 210mm; height: 297mm; border: none; z-index: 99999; background: white;';
+    document.body.appendChild(iframe);
     
-    // Wait for fonts to load
-    await document.fonts.ready;
+    // Write content to iframe
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+    iframeDoc.open();
+    iframeDoc.write(htmlContent);
+    iframeDoc.close();
     
-    // Small delay to ensure rendering
-    await new Promise(resolve => setTimeout(resolve, 100));
+    // Wait for content to render
+    await new Promise(resolve => setTimeout(resolve, 500));
     
-    // PDF options
-    const opt = {
-        margin: [10, 10, 10, 10],
-        filename: `薪資明細表_${data.year}年${data.month}月_${data.name || '姓名'}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-            scale: 2,
-            useCORS: true,
-            logging: false,
-            letterRendering: true,
-            allowTaint: true
-        },
-        jsPDF: { 
-            unit: 'mm', 
-            format: 'a4', 
-            orientation: 'portrait' 
-        }
-    };
+    const filename = `薪資明細表_${data.year}年${data.month}月_${data.name || '姓名'}.pdf`;
     
     try {
-        // Generate PDF
-        await html2pdf().set(opt).from(template).save();
+        // Use html2pdf with iframe body
+        const element = iframeDoc.body;
+        
+        const opt = {
+            margin: 10,
+            filename: filename,
+            image: { type: 'jpeg', quality: 0.95 },
+            html2canvas: { 
+                scale: 2,
+                useCORS: true,
+                logging: true,
+                backgroundColor: '#ffffff',
+                windowWidth: element.scrollWidth,
+                windowHeight: element.scrollHeight
+            },
+            jsPDF: { 
+                unit: 'mm', 
+                format: 'a4', 
+                orientation: 'portrait' 
+            }
+        };
+        
+        await html2pdf().set(opt).from(element).save();
+        
     } catch (error) {
         console.error('PDF generation error:', error);
-        alert('PDF 生成失敗，請稍後再試');
+        
+        // Fallback: use print dialog
+        if (confirm('PDF 生成失敗，是否使用列印功能？')) {
+            printPDF();
+        }
     } finally {
         // Clean up
-        document.body.removeChild(container);
+        document.body.removeChild(iframe);
     }
+}
+
+// Fallback print function
+function printPDF() {
+    const data = getFormData();
+    const htmlContent = getPDFHtml(data);
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+    
+    printWindow.onload = function() {
+        printWindow.focus();
+        printWindow.print();
+    };
 }
 
 function clearForm() {
