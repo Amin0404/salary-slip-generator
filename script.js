@@ -76,7 +76,7 @@ function formatCurrency(amount) {
 function formatDate(dateString) {
     if (!dateString) return '';
     const date = new Date(dateString);
-    const year = date.getFullYear() - 1911; // Convert to ROC year
+    const year = date.getFullYear() - 1911;
     const month = date.getMonth() + 1;
     const day = date.getDate();
     return `${year}年${month}月${day}日`;
@@ -84,30 +84,27 @@ function formatDate(dateString) {
 
 // ===== Calculation Functions =====
 function calculateSubtotalA() {
-    const total = getNumber(form.baseSalary) +
-                  getNumber(form.mealAllowance) +
-                  getNumber(form.attendanceBonus) +
-                  getNumber(form.positionAllowance);
-    return total;
+    return getNumber(form.baseSalary) +
+           getNumber(form.mealAllowance) +
+           getNumber(form.attendanceBonus) +
+           getNumber(form.positionAllowance);
 }
 
 function calculateSubtotalB() {
-    const total = getNumber(form.weekdayOT) +
-                  getNumber(form.holidayOT) +
-                  getNumber(form.restDayOT) +
-                  getNumber(form.unusedLeaveWage) +
-                  getNumber(form.expiredCompWage);
-    return total;
+    return getNumber(form.weekdayOT) +
+           getNumber(form.holidayOT) +
+           getNumber(form.restDayOT) +
+           getNumber(form.unusedLeaveWage) +
+           getNumber(form.expiredCompWage);
 }
 
 function calculateSubtotalC() {
-    const total = getNumber(form.laborInsurance) +
-                  getNumber(form.healthInsurance) +
-                  getNumber(form.welfareFund) +
-                  getNumber(form.voluntaryPension) +
-                  getNumber(form.personalLeave) +
-                  getNumber(form.sickLeave);
-    return total;
+    return getNumber(form.laborInsurance) +
+           getNumber(form.healthInsurance) +
+           getNumber(form.welfareFund) +
+           getNumber(form.voluntaryPension) +
+           getNumber(form.personalLeave) +
+           getNumber(form.sickLeave);
 }
 
 function calculateNetPay() {
@@ -115,25 +112,18 @@ function calculateNetPay() {
 }
 
 function calculateRemainingComp() {
-    const result = getNumber(form.prevMonthComp) +
-                   getNumber(form.thisMonthCompChoice) -
-                   getNumber(form.thisMonthCompUsed) -
-                   getNumber(form.expiredCompHours);
-    return result;
+    return getNumber(form.prevMonthComp) +
+           getNumber(form.thisMonthCompChoice) -
+           getNumber(form.thisMonthCompUsed) -
+           getNumber(form.expiredCompHours);
 }
 
 function updateCalculations() {
-    const a = calculateSubtotalA();
-    const b = calculateSubtotalB();
-    const c = calculateSubtotalC();
-    const net = calculateNetPay();
-    const remainingComp = calculateRemainingComp();
-    
-    subtotalA.textContent = formatCurrency(a);
-    subtotalB.textContent = formatCurrency(b);
-    subtotalC.textContent = formatCurrency(c);
-    netPay.textContent = formatCurrency(net);
-    form.remainingCompHours.value = remainingComp;
+    subtotalA.textContent = formatCurrency(calculateSubtotalA());
+    subtotalB.textContent = formatCurrency(calculateSubtotalB());
+    subtotalC.textContent = formatCurrency(calculateSubtotalC());
+    netPay.textContent = formatCurrency(calculateNetPay());
+    form.remainingCompHours.value = calculateRemainingComp();
 }
 
 // ===== PDF Generation =====
@@ -188,82 +178,84 @@ function getFormData() {
 }
 
 function getPDFHtml(data) {
-    return `
-<!DOCTYPE html>
+    return `<!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: "Microsoft JhengHei", "微軟正黑體", "Noto Sans TC", sans-serif;
-            font-size: 12px;
-            line-height: 1.4;
-            color: #000;
-            background: #fff;
-            padding: 20px;
-        }
-        .title { 
-            text-align: center; 
-            font-size: 18px; 
-            font-weight: bold; 
-            margin-bottom: 15px; 
-        }
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-bottom: 12px; 
-        }
-        th, td { 
-            border: 1px solid #000; 
-            padding: 6px 8px; 
-            font-size: 11px;
-        }
-        th { 
-            background: #e0e0e0; 
-            font-weight: bold; 
-            text-align: center; 
-        }
-        .text-center { text-align: center; }
-        .text-right { text-align: right; }
-        .bg-light { background: #f5f5f5; }
-        .bg-gray { background: #e8e8e8; }
-        .total-box { 
-            max-width: 280px; 
-            margin: 15px auto; 
-        }
-        .total-box td { 
-            padding: 12px 15px; 
-            border: 2px solid #000; 
-        }
-        .net-amount { 
-            font-size: 18px; 
-            font-weight: bold; 
-        }
-        .note { 
-            font-size: 10px; 
-            margin-bottom: 8px; 
-        }
-        .vertical-text {
-            writing-mode: vertical-rl;
-            text-orientation: mixed;
-            text-align: center;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>${data.year}年${data.month}月薪資發放明細表</title>
+<style>
+@page { size: A4; margin: 15mm; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { 
+    font-family: "Noto Sans TC", "Microsoft JhengHei", "微軟正黑體", "PingFang TC", sans-serif;
+    font-size: 11px;
+    line-height: 1.4;
+    color: #000;
+    background: #fff;
+}
+.container { padding: 10px; }
+.title { 
+    text-align: center; 
+    font-size: 18px; 
+    font-weight: bold; 
+    margin-bottom: 15px; 
+}
+table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    margin-bottom: 12px; 
+}
+th, td { 
+    border: 1px solid #000; 
+    padding: 5px 6px; 
+    font-size: 10px;
+    vertical-align: middle;
+}
+th { 
+    background: #e0e0e0; 
+    font-weight: bold; 
+    text-align: center; 
+}
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.bg-light { background: #f5f5f5; }
+.bg-gray { background: #e8e8e8; }
+.total-box { 
+    width: 250px; 
+    margin: 15px auto; 
+}
+.total-box td { 
+    padding: 10px 12px; 
+    border: 2px solid #000; 
+}
+.net-amount { 
+    font-size: 16px; 
+    font-weight: bold; 
+}
+.note { 
+    font-size: 9px; 
+    margin-bottom: 8px; 
+}
+.small-table th, .small-table td {
+    font-size: 9px;
+    padding: 4px 5px;
+}
+</style>
 </head>
 <body>
+<div class="container">
     <div class="title">${data.year}年${data.month}月薪資發放明細表</div>
     
     <table>
         <tr>
-            <td class="bg-light" style="width:10%"><strong>姓名</strong></td>
-            <td style="width:15%">${data.name}</td>
-            <td class="bg-light" style="width:10%"><strong>職位</strong></td>
-            <td style="width:15%">${data.position}</td>
-            <td class="bg-light" style="width:10%"><strong>入帳帳號</strong></td>
+            <td class="bg-light text-center" style="width:8%"><b>姓名</b></td>
+            <td style="width:14%">${data.name}</td>
+            <td class="bg-light text-center" style="width:8%"><b>職位</b></td>
+            <td style="width:14%">${data.position}</td>
+            <td class="bg-light text-center" style="width:10%"><b>入帳帳號</b></td>
             <td style="width:20%">${data.account}</td>
-            <td class="bg-light" style="width:10%"><strong>發薪日期</strong></td>
-            <td style="width:10%">${data.payDate}</td>
+            <td class="bg-light text-center" style="width:10%"><b>發薪日期</b></td>
+            <td style="width:16%">${data.payDate}</td>
         </tr>
     </table>
 
@@ -275,12 +267,12 @@ function getPDFHtml(data) {
                 <th colspan="2">應代扣項目</th>
             </tr>
             <tr>
-                <th>項目</th>
-                <th>金額</th>
-                <th>項目</th>
-                <th>金額</th>
-                <th>項目</th>
-                <th>金額</th>
+                <th style="width:18%">項目</th>
+                <th style="width:15%">金額</th>
+                <th style="width:18%">項目</th>
+                <th style="width:15%">金額</th>
+                <th style="width:18%">項目</th>
+                <th style="width:16%">金額</th>
             </tr>
         </thead>
         <tbody>
@@ -317,7 +309,7 @@ function getPDFHtml(data) {
                 <td class="text-right">${data.voluntaryPension}</td>
             </tr>
             <tr>
-                <td rowspan="2" class="text-center bg-light vertical-text">非固定支付項目</td>
+                <td rowspan="2" class="text-center bg-light">非固定<br>支付項目</td>
                 <td rowspan="2"></td>
                 <td class="text-center">届期未補休折發工資</td>
                 <td class="text-right">${data.expiredCompWage}</td>
@@ -331,28 +323,26 @@ function getPDFHtml(data) {
                 <td class="text-right">${data.sickLeave}</td>
             </tr>
             <tr class="bg-gray">
-                <td class="text-center"><strong>小計(A)</strong></td>
-                <td class="text-right"><strong>${data.subtotalA}</strong></td>
-                <td class="text-center"><strong>小計(B)</strong></td>
-                <td class="text-right"><strong>${data.subtotalB}</strong></td>
-                <td class="text-center"><strong>小計(C)</strong></td>
-                <td class="text-right"><strong>${data.subtotalC}</strong></td>
+                <td class="text-center"><b>小計(A)</b></td>
+                <td class="text-right"><b>${data.subtotalA}</b></td>
+                <td class="text-center"><b>小計(B)</b></td>
+                <td class="text-right"><b>${data.subtotalB}</b></td>
+                <td class="text-center"><b>小計(C)</b></td>
+                <td class="text-right"><b>${data.subtotalC}</b></td>
             </tr>
         </tbody>
     </table>
 
     <table class="total-box">
         <tr>
-            <td class="text-center">
-                <strong>實領金額</strong><br>(A)+(B)-(C)
-            </td>
+            <td class="text-center"><b>實領金額</b><br>(A)+(B)-(C)</td>
             <td class="text-center net-amount">${data.netPay}</td>
         </tr>
     </table>
 
     <p class="note">＊備註：貴事業單位如有實施特別休假遞延或加班補休制度，請參考下列表格使用：</p>
     
-    <table>
+    <table class="small-table">
         <tr>
             <th colspan="2">特別休假</th>
             <th colspan="2">加班補休</th>
@@ -389,10 +379,11 @@ function getPDFHtml(data) {
         <tr>
             <td>今年特別休假的請休期日</td>
             <td class="text-center">${data.leaveDeadline}</td>
-            <td>至本月止未休補休時數<br>（Ⅰ）+（Ⅱ）-（Ⅲ）-（Ⅳ）</td>
+            <td>至本月止未休補休時數（Ⅰ）+（Ⅱ）-（Ⅲ）-（Ⅳ）</td>
             <td class="text-center">${data.remainingCompHours}小時</td>
         </tr>
     </table>
+</div>
 </body>
 </html>`;
 }
@@ -401,14 +392,12 @@ function showPreview() {
     const data = getFormData();
     const htmlContent = getPDFHtml(data);
     
-    // Create iframe for preview
     const iframe = document.createElement('iframe');
     iframe.style.cssText = 'width: 100%; height: 100%; border: none; background: white;';
     
     pdfContent.innerHTML = '';
     pdfContent.appendChild(iframe);
     
-    // Write content to iframe
     const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
     iframeDoc.open();
     iframeDoc.write(htmlContent);
@@ -423,76 +412,28 @@ function closePreview() {
     document.body.style.overflow = '';
 }
 
-async function exportPDF() {
+// 主要匯出函數 - 使用新視窗列印
+function exportPDF() {
     const data = getFormData();
     const htmlContent = getPDFHtml(data);
     
-    // Create a hidden iframe
-    const iframe = document.createElement('iframe');
-    iframe.style.cssText = 'position: fixed; left: 0; top: 0; width: 210mm; height: 297mm; border: none; z-index: 99999; background: white;';
-    document.body.appendChild(iframe);
+    // 開啟新視窗
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
     
-    // Write content to iframe
-    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-    iframeDoc.open();
-    iframeDoc.write(htmlContent);
-    iframeDoc.close();
-    
-    // Wait for content to render
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const filename = `薪資明細表_${data.year}年${data.month}月_${data.name || '姓名'}.pdf`;
-    
-    try {
-        // Use html2pdf with iframe body
-        const element = iframeDoc.body;
-        
-        const opt = {
-            margin: 10,
-            filename: filename,
-            image: { type: 'jpeg', quality: 0.95 },
-            html2canvas: { 
-                scale: 2,
-                useCORS: true,
-                logging: true,
-                backgroundColor: '#ffffff',
-                windowWidth: element.scrollWidth,
-                windowHeight: element.scrollHeight
-            },
-            jsPDF: { 
-                unit: 'mm', 
-                format: 'a4', 
-                orientation: 'portrait' 
-            }
-        };
-        
-        await html2pdf().set(opt).from(element).save();
-        
-    } catch (error) {
-        console.error('PDF generation error:', error);
-        
-        // Fallback: use print dialog
-        if (confirm('PDF 生成失敗，是否使用列印功能？')) {
-            printPDF();
-        }
-    } finally {
-        // Clean up
-        document.body.removeChild(iframe);
+    if (!printWindow) {
+        alert('請允許彈出視窗以匯出 PDF');
+        return;
     }
-}
-
-// Fallback print function
-function printPDF() {
-    const data = getFormData();
-    const htmlContent = getPDFHtml(data);
     
-    const printWindow = window.open('', '_blank');
     printWindow.document.write(htmlContent);
     printWindow.document.close();
     
+    // 等待內容載入後自動列印
     printWindow.onload = function() {
-        printWindow.focus();
-        printWindow.print();
+        setTimeout(() => {
+            printWindow.focus();
+            printWindow.print();
+        }, 250);
     };
 }
 
@@ -509,13 +450,11 @@ function clearForm() {
 }
 
 // ===== Event Listeners =====
-// Add input listeners for auto-calculation
 const moneyInputs = document.querySelectorAll('.money-input');
 moneyInputs.forEach(input => {
     input.addEventListener('input', updateCalculations);
 });
 
-// Comp time calculation
 const compInputs = [form.prevMonthComp, form.thisMonthCompChoice, form.thisMonthCompUsed, form.expiredCompHours];
 compInputs.forEach(input => {
     if (input) {
@@ -523,7 +462,6 @@ compInputs.forEach(input => {
     }
 });
 
-// Button listeners
 previewBtn.addEventListener('click', showPreview);
 exportBtn.addEventListener('click', exportPDF);
 clearBtn.addEventListener('click', clearForm);
@@ -533,14 +471,12 @@ modalExportBtn.addEventListener('click', () => {
     exportPDF();
 });
 
-// Close modal on outside click
 previewModal.addEventListener('click', (e) => {
     if (e.target === previewModal) {
         closePreview();
     }
 });
 
-// Close modal on Escape key
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && previewModal.classList.contains('active')) {
         closePreview();
@@ -549,22 +485,15 @@ document.addEventListener('keydown', (e) => {
 
 // ===== Initialize =====
 document.addEventListener('DOMContentLoaded', () => {
-    // Set default date to today
     const today = new Date();
     form.payDate.value = today.toISOString().split('T')[0];
-    
-    // Set default year and month (ROC calendar)
     form.year.value = today.getFullYear() - 1911;
     form.month.value = today.getMonth() + 1;
-    
-    // Initialize calculations
     updateCalculations();
-    
-    // Load saved data
     loadFromLocalStorage();
 });
 
-// ===== Local Storage (Save Form Data) =====
+// ===== Local Storage =====
 function saveToLocalStorage() {
     const data = {};
     Object.entries(form).forEach(([key, input]) => {
@@ -592,7 +521,6 @@ function loadFromLocalStorage() {
     }
 }
 
-// Auto-save on input
 document.querySelectorAll('input').forEach(input => {
     input.addEventListener('change', saveToLocalStorage);
 });
