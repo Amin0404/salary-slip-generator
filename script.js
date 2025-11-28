@@ -63,7 +63,6 @@ const modalExportBtn = document.getElementById('modalExportBtn');
 // Modal
 const previewModal = document.getElementById('previewModal');
 const pdfContent = document.getElementById('pdfContent');
-const pdfTemplate = document.getElementById('pdfTemplate');
 
 // ===== Utility Functions =====
 function getNumber(element) {
@@ -143,71 +142,226 @@ function updateCalculations() {
 }
 
 // ===== PDF Generation =====
-function populatePDFTemplate() {
-    // Clone the template
-    const template = pdfTemplate.cloneNode(true);
-    template.style.display = 'block';
-    template.classList.add('pdf-template');
+function getFormData() {
+    return {
+        year: form.year.value || '○',
+        month: form.month.value || '○',
+        name: form.name.value || '',
+        position: form.position.value || '',
+        account: form.account.value || '',
+        payDate: formatDate(form.payDate.value),
+        
+        baseSalary: formatCurrency(getNumber(form.baseSalary)),
+        mealAllowance: formatCurrency(getNumber(form.mealAllowance)),
+        attendanceBonus: formatCurrency(getNumber(form.attendanceBonus)),
+        positionAllowance: formatCurrency(getNumber(form.positionAllowance)),
+        
+        weekdayOT: formatCurrency(getNumber(form.weekdayOT)),
+        holidayOT: formatCurrency(getNumber(form.holidayOT)),
+        restDayOT: formatCurrency(getNumber(form.restDayOT)),
+        unusedLeaveWage: formatCurrency(getNumber(form.unusedLeaveWage)),
+        expiredCompWage: formatCurrency(getNumber(form.expiredCompWage)),
+        
+        laborInsurance: formatCurrency(getNumber(form.laborInsurance)),
+        healthInsurance: formatCurrency(getNumber(form.healthInsurance)),
+        welfareFund: formatCurrency(getNumber(form.welfareFund)),
+        voluntaryPension: formatCurrency(getNumber(form.voluntaryPension)),
+        personalLeave: formatCurrency(getNumber(form.personalLeave)),
+        sickLeave: formatCurrency(getNumber(form.sickLeave)),
+        
+        subtotalA: formatCurrency(calculateSubtotalA()),
+        subtotalB: formatCurrency(calculateSubtotalB()),
+        subtotalC: formatCurrency(calculateSubtotalC()),
+        netPay: formatCurrency(calculateNetPay()),
+        
+        leavePeriod: form.leaveStartDate.value && form.leaveEndDate.value 
+            ? `${formatDate(form.leaveStartDate.value)}－${formatDate(form.leaveEndDate.value)}`
+            : '',
+        deferredLeaveDays: form.deferredLeaveDays.value || '○',
+        annualLeaveDays: form.annualLeaveDays.value || '○',
+        usedLeaveDays: form.usedLeaveDays.value || '○',
+        remainingLeaveDays: form.remainingLeaveDays.value || '○',
+        leaveDeadline: form.leaveDeadline.value || '',
+        
+        compDeadline: form.compDeadline.value || '',
+        prevMonthComp: form.prevMonthComp.value || '○',
+        thisMonthCompChoice: form.thisMonthCompChoice.value || '○',
+        thisMonthCompUsed: form.thisMonthCompUsed.value || '○',
+        expiredCompHours: form.expiredCompHours.value || '○',
+        remainingCompHours: calculateRemainingComp() || '○'
+    };
+}
+
+function createPDFTemplate(data) {
+    const template = document.createElement('div');
+    template.className = 'pdf-template';
+    template.style.cssText = `
+        display: block;
+        background: white;
+        color: #1a1a1a;
+        padding: 30px;
+        font-family: 'Noto Sans TC', sans-serif;
+        font-size: 12px;
+        line-height: 1.5;
+        width: 210mm;
+    `;
     
-    // Basic Info
-    template.querySelector('#pdfYear').textContent = form.year.value || '○';
-    template.querySelector('#pdfMonth').textContent = form.month.value || '○';
-    template.querySelector('#pdfName').textContent = form.name.value || '';
-    template.querySelector('#pdfPosition').textContent = form.position.value || '';
-    template.querySelector('#pdfAccount').textContent = form.account.value || '';
-    template.querySelector('#pdfPayDate').textContent = formatDate(form.payDate.value);
-    
-    // Salary Structure (A)
-    template.querySelector('#pdfBaseSalary').textContent = formatCurrency(getNumber(form.baseSalary));
-    template.querySelector('#pdfMealAllowance').textContent = formatCurrency(getNumber(form.mealAllowance));
-    template.querySelector('#pdfAttendanceBonus').textContent = formatCurrency(getNumber(form.attendanceBonus));
-    template.querySelector('#pdfPositionAllowance').textContent = formatCurrency(getNumber(form.positionAllowance));
-    
-    // Overtime (B)
-    template.querySelector('#pdfWeekdayOT').textContent = formatCurrency(getNumber(form.weekdayOT));
-    template.querySelector('#pdfHolidayOT').textContent = formatCurrency(getNumber(form.holidayOT));
-    template.querySelector('#pdfRestDayOT').textContent = formatCurrency(getNumber(form.restDayOT));
-    template.querySelector('#pdfUnusedLeave').textContent = formatCurrency(getNumber(form.unusedLeaveWage));
-    template.querySelector('#pdfExpiredComp').textContent = formatCurrency(getNumber(form.expiredCompWage));
-    
-    // Deductions (C)
-    template.querySelector('#pdfLaborIns').textContent = formatCurrency(getNumber(form.laborInsurance));
-    template.querySelector('#pdfHealthIns').textContent = formatCurrency(getNumber(form.healthInsurance));
-    template.querySelector('#pdfWelfare').textContent = formatCurrency(getNumber(form.welfareFund));
-    template.querySelector('#pdfVolPension').textContent = formatCurrency(getNumber(form.voluntaryPension));
-    template.querySelector('#pdfPersonalLeave').textContent = formatCurrency(getNumber(form.personalLeave));
-    template.querySelector('#pdfSickLeave').textContent = formatCurrency(getNumber(form.sickLeave));
-    
-    // Subtotals
-    template.querySelector('#pdfSubtotalA').textContent = formatCurrency(calculateSubtotalA());
-    template.querySelector('#pdfSubtotalB').textContent = formatCurrency(calculateSubtotalB());
-    template.querySelector('#pdfSubtotalC').textContent = formatCurrency(calculateSubtotalC());
-    template.querySelector('#pdfNetPay').textContent = formatCurrency(calculateNetPay());
-    
-    // Leave Info
-    const leavePeriod = form.leaveStartDate.value && form.leaveEndDate.value 
-        ? `${formatDate(form.leaveStartDate.value)}－${formatDate(form.leaveEndDate.value)}`
-        : '';
-    template.querySelector('#pdfLeavePeriod').textContent = leavePeriod;
-    template.querySelector('#pdfDeferredDays').textContent = form.deferredLeaveDays.value || '○';
-    template.querySelector('#pdfAnnualDays').textContent = form.annualLeaveDays.value || '○';
-    template.querySelector('#pdfUsedDays').textContent = form.usedLeaveDays.value || '○';
-    template.querySelector('#pdfRemainingDays').textContent = form.remainingLeaveDays.value || '○';
-    template.querySelector('#pdfLeaveDeadline').textContent = form.leaveDeadline.value || '';
-    
-    // Comp Time Info
-    template.querySelector('#pdfCompDeadline').textContent = form.compDeadline.value || '';
-    template.querySelector('#pdfPrevComp').textContent = form.prevMonthComp.value || '○';
-    template.querySelector('#pdfThisChoice').textContent = form.thisMonthCompChoice.value || '○';
-    template.querySelector('#pdfThisUsed').textContent = form.thisMonthCompUsed.value || '○';
-    template.querySelector('#pdfExpiredHours').textContent = form.expiredCompHours.value || '○';
-    template.querySelector('#pdfRemainingComp').textContent = calculateRemainingComp() || '○';
+    template.innerHTML = `
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h1 style="font-size: 20px; font-weight: 700; color: #1a1a1a; margin: 0;">
+                ${data.year}年${data.month}月薪資發放明細表
+            </h1>
+        </div>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+            <tr>
+                <td style="padding: 8px 10px; border: 1px solid #333; background: #f5f5f5; font-size: 12px;"><strong>姓名</strong></td>
+                <td style="padding: 8px 10px; border: 1px solid #333; font-size: 12px;">${data.name}</td>
+                <td style="padding: 8px 10px; border: 1px solid #333; background: #f5f5f5; font-size: 12px;"><strong>職位</strong></td>
+                <td style="padding: 8px 10px; border: 1px solid #333; font-size: 12px;">${data.position}</td>
+                <td style="padding: 8px 10px; border: 1px solid #333; background: #f5f5f5; font-size: 12px;"><strong>入帳帳號</strong></td>
+                <td style="padding: 8px 10px; border: 1px solid #333; font-size: 12px;">${data.account}</td>
+                <td style="padding: 8px 10px; border: 1px solid #333; background: #f5f5f5; font-size: 12px;"><strong>發薪日期</strong></td>
+                <td style="padding: 8px 10px; border: 1px solid #333; font-size: 12px;">${data.payDate}</td>
+            </tr>
+        </table>
+
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+            <thead>
+                <tr>
+                    <th colspan="2" style="border: 1px solid #333; padding: 8px 10px; background: #e5e5e5; font-weight: 600; text-align: center;">約定薪資結構</th>
+                    <th colspan="2" style="border: 1px solid #333; padding: 8px 10px; background: #e5e5e5; font-weight: 600; text-align: center;"></th>
+                    <th colspan="2" style="border: 1px solid #333; padding: 8px 10px; background: #e5e5e5; font-weight: 600; text-align: center;">應代扣項目</th>
+                </tr>
+                <tr>
+                    <th style="border: 1px solid #333; padding: 8px 10px; background: #e5e5e5; font-weight: 600; text-align: center;">項目</th>
+                    <th style="border: 1px solid #333; padding: 8px 10px; background: #e5e5e5; font-weight: 600; text-align: center;">金額</th>
+                    <th style="border: 1px solid #333; padding: 8px 10px; background: #e5e5e5; font-weight: 600; text-align: center;">項目</th>
+                    <th style="border: 1px solid #333; padding: 8px 10px; background: #e5e5e5; font-weight: 600; text-align: center;">金額</th>
+                    <th style="border: 1px solid #333; padding: 8px 10px; background: #e5e5e5; font-weight: 600; text-align: center;">項目</th>
+                    <th style="border: 1px solid #333; padding: 8px 10px; background: #e5e5e5; font-weight: 600; text-align: center;">金額</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">底薪</td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right; min-width: 80px;">${data.baseSalary}</td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">平日加班費</td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right; min-width: 80px;">${data.weekdayOT}</td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">勞保費</td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right; min-width: 80px;">${data.laborInsurance}</td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">伙食津貼</td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.mealAllowance}</td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">休假日加班費</td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.holidayOT}</td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">健保費</td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.healthInsurance}</td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">全勤獎金</td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.attendanceBonus}</td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">休息日加班費</td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.restDayOT}</td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">職工福利金</td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.welfareFund}</td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">職務津貼</td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.positionAllowance}</td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">未休特別休假工資</td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.unusedLeaveWage}</td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">勞工自願提繳退休金</td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.voluntaryPension}</td>
+                </tr>
+                <tr>
+                    <td rowspan="2" style="border: 1px solid #333; padding: 8px 10px; text-align: center; background: #f9f9f9; writing-mode: vertical-rl;">非固定支付項目</td>
+                    <td rowspan="2" style="border: 1px solid #333; padding: 8px 10px;"></td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">届期未補休折發工資</td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.expiredCompWage}</td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">事假</td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.personalLeave}</td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #333; padding: 8px 10px;"></td>
+                    <td style="border: 1px solid #333; padding: 8px 10px;"></td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">病假</td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.sickLeave}</td>
+                </tr>
+                <tr style="background: #f0f0f0; font-weight: 600;">
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">小計(A)</td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.subtotalA}</td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">小計(B)</td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.subtotalB}</td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: center;">小計(C)</td>
+                    <td style="border: 1px solid #333; padding: 8px 10px; text-align: right;">${data.subtotalC}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <table style="margin: 20px auto; max-width: 300px; border-collapse: collapse;">
+            <tr>
+                <td style="border: 2px solid #333; padding: 15px 20px; text-align: center;">
+                    <strong>實領金額</strong><br>
+                    (A)+(B)-(C)
+                </td>
+                <td style="border: 2px solid #333; padding: 15px 20px; text-align: center; font-size: 22px; font-weight: 700;">${data.netPay}</td>
+            </tr>
+        </table>
+
+        <div style="margin-top: 20px;">
+            <p style="font-size: 11px; margin-bottom: 10px;">＊備註：貴事業單位如有實施特別休假遞延或加班補休制度，請參考下列表格使用：</p>
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                    <th colspan="2" style="border: 1px solid #333; padding: 6px 8px; background: #e5e5e5; text-align: center; font-weight: 600; font-size: 11px;">特別休假</th>
+                    <th colspan="2" style="border: 1px solid #333; padding: 6px 8px; background: #e5e5e5; text-align: center; font-weight: 600; font-size: 11px;">加班補休</th>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">請休期間：${data.leavePeriod}</td>
+                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;"></td>
+                    <td colspan="2" style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">勞雇雙方約定之補休期限：${data.compDeadline}</td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">經過遞延的特別休假日數</td>
+                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">${data.deferredLeaveDays}日</td>
+                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">至上月止未休補休時數（Ⅰ）</td>
+                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">${data.prevMonthComp}小時</td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">今年可休的特別休假日數</td>
+                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">${data.annualLeaveDays}日</td>
+                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">本月選擇補休時數（Ⅱ）</td>
+                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">${data.thisMonthCompChoice}小時</td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">今年已休的特別休假日數</td>
+                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">${data.usedLeaveDays}日</td>
+                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">本月已補休時數（Ⅲ）</td>
+                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">${data.thisMonthCompUsed}小時</td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">今年未休的特別休假日數</td>
+                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">${data.remainingLeaveDays}日</td>
+                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">届期未休補折發工資時數（Ⅳ）</td>
+                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">${data.expiredCompHours}小時</td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">今年特別休假的請休期日</td>
+                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">${data.leaveDeadline}</td>
+                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">至本月止未休補休時數<br>（Ⅰ）+（Ⅱ）-（Ⅲ）-（Ⅳ）</td>
+                    <td style="border: 1px solid #333; padding: 6px 8px; font-size: 11px;">${data.remainingCompHours}小時</td>
+                </tr>
+            </table>
+        </div>
+    `;
     
     return template;
 }
 
 function showPreview() {
-    const template = populatePDFTemplate();
+    const data = getFormData();
+    const template = createPDFTemplate(data);
     pdfContent.innerHTML = '';
     pdfContent.appendChild(template);
     previewModal.classList.add('active');
@@ -219,23 +373,34 @@ function closePreview() {
     document.body.style.overflow = '';
 }
 
-function exportPDF() {
-    const template = populatePDFTemplate();
+async function exportPDF() {
+    const data = getFormData();
+    const template = createPDFTemplate(data);
     
-    // Create a temporary container
+    // Create a container for rendering
     const container = document.createElement('div');
+    container.className = 'pdf-render-container';
+    container.style.cssText = 'position: fixed; left: 0; top: 0; z-index: 9999; background: white;';
     container.appendChild(template);
     document.body.appendChild(container);
+    
+    // Wait for fonts to load
+    await document.fonts.ready;
+    
+    // Small delay to ensure rendering
+    await new Promise(resolve => setTimeout(resolve, 100));
     
     // PDF options
     const opt = {
         margin: [10, 10, 10, 10],
-        filename: `薪資明細表_${form.year.value || '○'}年${form.month.value || '○'}月_${form.name.value || '姓名'}.pdf`,
+        filename: `薪資明細表_${data.year}年${data.month}月_${data.name || '姓名'}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { 
             scale: 2,
             useCORS: true,
-            letterRendering: true
+            logging: false,
+            letterRendering: true,
+            allowTaint: true
         },
         jsPDF: { 
             unit: 'mm', 
@@ -244,10 +409,16 @@ function exportPDF() {
         }
     };
     
-    // Generate PDF
-    html2pdf().set(opt).from(template).save().then(() => {
+    try {
+        // Generate PDF
+        await html2pdf().set(opt).from(template).save();
+    } catch (error) {
+        console.error('PDF generation error:', error);
+        alert('PDF 生成失敗，請稍後再試');
+    } finally {
+        // Clean up
         document.body.removeChild(container);
-    });
+    }
 }
 
 function clearForm() {
@@ -257,6 +428,7 @@ function clearForm() {
                 input.value = '';
             }
         });
+        localStorage.removeItem('salarySlipData');
         updateCalculations();
     }
 }
@@ -271,7 +443,9 @@ moneyInputs.forEach(input => {
 // Comp time calculation
 const compInputs = [form.prevMonthComp, form.thisMonthCompChoice, form.thisMonthCompUsed, form.expiredCompHours];
 compInputs.forEach(input => {
-    input.addEventListener('input', updateCalculations);
+    if (input) {
+        input.addEventListener('input', updateCalculations);
+    }
 });
 
 // Button listeners
@@ -310,9 +484,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Initialize calculations
     updateCalculations();
+    
+    // Load saved data
+    loadFromLocalStorage();
 });
 
-// ===== Local Storage (Optional - Save Form Data) =====
+// ===== Local Storage (Save Form Data) =====
 function saveToLocalStorage() {
     const data = {};
     Object.entries(form).forEach(([key, input]) => {
@@ -326,13 +503,17 @@ function saveToLocalStorage() {
 function loadFromLocalStorage() {
     const saved = localStorage.getItem('salarySlipData');
     if (saved) {
-        const data = JSON.parse(saved);
-        Object.entries(data).forEach(([key, value]) => {
-            if (form[key]) {
-                form[key].value = value;
-            }
-        });
-        updateCalculations();
+        try {
+            const data = JSON.parse(saved);
+            Object.entries(data).forEach(([key, value]) => {
+                if (form[key]) {
+                    form[key].value = value;
+                }
+            });
+            updateCalculations();
+        } catch (e) {
+            console.error('Error loading saved data:', e);
+        }
     }
 }
 
@@ -340,9 +521,3 @@ function loadFromLocalStorage() {
 document.querySelectorAll('input').forEach(input => {
     input.addEventListener('change', saveToLocalStorage);
 });
-
-// Load saved data on page load
-document.addEventListener('DOMContentLoaded', () => {
-    loadFromLocalStorage();
-});
-

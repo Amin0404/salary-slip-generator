@@ -129,14 +129,27 @@ body::before {
 /* ===== Form Grid ===== */
 .form-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+/* Desktop: 4 columns for basic info */
+@media (min-width: 900px) {
+    .form-grid.basic-info {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .form-grid.leave-info,
+    .form-grid.comp-info {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 .form-group {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
+    min-width: 0; /* Prevent overflow */
 }
 
 .form-group.full-width {
@@ -147,10 +160,14 @@ body::before {
     font-size: 0.9rem;
     font-weight: 500;
     color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .form-group input,
 .form-group select {
+    width: 100%;
     padding: 12px 16px;
     background: var(--bg-input);
     border: 1px solid var(--border);
@@ -177,19 +194,22 @@ body::before {
     cursor: not-allowed;
 }
 
-/* Input with unit */
+/* Input with unit - Fixed layout */
 .input-with-unit {
     display: flex;
     align-items: stretch;
+    width: 100%;
 }
 
 .input-with-unit input {
     flex: 1;
+    min-width: 0; /* Allow shrinking */
     border-radius: var(--radius-md) 0 0 var(--radius-md);
+    border-right: none;
 }
 
 .input-with-unit .unit {
-    padding: 12px 16px;
+    padding: 12px 14px;
     background: var(--bg-hover);
     border: 1px solid var(--border);
     border-left: none;
@@ -198,6 +218,9 @@ body::before {
     font-size: 0.9rem;
     display: flex;
     align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .formula {
@@ -211,10 +234,12 @@ body::before {
     display: flex;
     align-items: center;
     gap: 12px;
+    width: 100%;
 }
 
 .date-range input {
     flex: 1;
+    min-width: 0;
     padding: 12px 16px;
     background: var(--bg-input);
     border: 1px solid var(--border);
@@ -233,6 +258,7 @@ body::before {
 
 .date-range span {
     color: var(--text-secondary);
+    flex-shrink: 0;
 }
 
 /* ===== Subtotals ===== */
@@ -426,14 +452,17 @@ body::before {
 }
 
 #pdfContent .pdf-template,
-.modal-body .pdf-template {
-    display: block;
+.modal-body .pdf-template,
+.pdf-render-container .pdf-template {
+    display: block !important;
     background: white;
     color: #1a1a1a;
     padding: 30px;
     font-family: 'Noto Sans TC', sans-serif;
-    font-size: 11px;
+    font-size: 12px;
     line-height: 1.5;
+    width: 210mm;
+    min-height: 297mm;
 }
 
 .pdf-header {
@@ -448,7 +477,7 @@ body::before {
 }
 
 .pdf-title {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 700;
     color: #1a1a1a;
     margin: 0;
@@ -464,12 +493,13 @@ body::before {
 .info-table td {
     padding: 8px 10px;
     border: 1px solid #333;
-    font-size: 11px;
+    font-size: 12px;
 }
 
 .info-table td:nth-child(odd) {
     background: #f5f5f5;
     width: 10%;
+    white-space: nowrap;
 }
 
 .salary-table {
@@ -482,6 +512,7 @@ body::before {
     padding: 8px 10px;
     text-align: center;
     vertical-align: middle;
+    font-size: 12px;
 }
 
 .salary-table th {
@@ -491,14 +522,14 @@ body::before {
 
 .salary-table td:nth-child(even) {
     text-align: right;
-    min-width: 70px;
+    min-width: 80px;
 }
 
 .salary-table .side-label {
     writing-mode: vertical-rl;
     text-orientation: mixed;
     background: #f9f9f9;
-    font-size: 10px;
+    font-size: 11px;
 }
 
 .salary-table .subtotal-row {
@@ -517,12 +548,13 @@ body::before {
     text-align: center;
 }
 
-.total-table .net-amount {
-    font-size: 20px;
-    font-weight: 700;
-    color: #1a1a1a;
-    background: none;
-    -webkit-text-fill-color: #1a1a1a;
+.total-table .net-amount,
+.pdf-template .total-table #pdfNetPay {
+    font-size: 22px !important;
+    font-weight: 700 !important;
+    color: #1a1a1a !important;
+    background: none !important;
+    -webkit-text-fill-color: #1a1a1a !important;
 }
 
 /* Leave table */
@@ -531,7 +563,7 @@ body::before {
 }
 
 .note-title {
-    font-size: 10px;
+    font-size: 11px;
     margin-bottom: 10px;
 }
 
@@ -539,7 +571,7 @@ body::before {
 .leave-table td {
     border: 1px solid #333;
     padding: 6px 8px;
-    font-size: 10px;
+    font-size: 11px;
     text-align: left;
 }
 
@@ -560,30 +592,115 @@ body::before {
 }
 
 /* ===== Responsive ===== */
+
+/* Tablet */
 @media (max-width: 768px) {
+    .container {
+        padding: 16px;
+    }
+    
+    .header {
+        padding: 30px 16px;
+    }
+    
     .header h1 {
         font-size: 1.8rem;
     }
     
+    .form-section {
+        padding: 20px;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+    
+    .form-group label {
+        font-size: 0.85rem;
+    }
+    
+    .net-amount {
+        font-size: 2rem;
+    }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+    .container {
+        padding: 12px;
+    }
+    
+    .header {
+        padding: 24px 12px;
+        margin-bottom: 20px;
+    }
+    
+    .header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .subtitle {
+        font-size: 0.95rem;
+    }
+    
+    .form-section {
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+    
+    .section-title {
+        font-size: 1.1rem;
+        margin-bottom: 16px;
+    }
+    
     .form-grid {
         grid-template-columns: 1fr;
+        gap: 14px;
+    }
+    
+    .form-group input,
+    .form-group select {
+        padding: 10px 14px;
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+    
+    .input-with-unit .unit {
+        padding: 10px 12px;
+        font-size: 0.85rem;
+    }
+    
+    .date-range {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .date-range span {
+        align-self: center;
     }
     
     .action-buttons {
         flex-direction: column;
         align-items: stretch;
+        gap: 12px;
+        margin: 30px 0;
     }
     
     .btn {
         justify-content: center;
-    }
-    
-    .date-range {
-        flex-direction: column;
+        padding: 14px 20px;
     }
     
     .net-amount {
-        font-size: 2rem;
+        font-size: 1.8rem;
+    }
+    
+    .modal-content {
+        margin: 20px auto;
+    }
+    
+    .modal-body {
+        padding: 16px;
     }
 }
 
@@ -622,3 +739,10 @@ body::before {
     }
 }
 
+/* PDF Render Container (for export) */
+.pdf-render-container {
+    position: fixed;
+    left: -9999px;
+    top: 0;
+    z-index: -1;
+}
