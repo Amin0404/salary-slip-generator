@@ -13,6 +13,7 @@ const form = {
     mealAllowance: document.getElementById('mealAllowance'),
     attendanceBonus: document.getElementById('attendanceBonus'),
     positionAllowance: document.getElementById('positionAllowance'),
+    teaBonus: document.getElementById('teaBonus'),
     
     // Overtime (B)
     weekdayOT: document.getElementById('weekdayOT'),
@@ -87,7 +88,8 @@ function calculateSubtotalA() {
     return getNumber(form.baseSalary) +
            getNumber(form.mealAllowance) +
            getNumber(form.attendanceBonus) +
-           getNumber(form.positionAllowance);
+           getNumber(form.positionAllowance) +
+           getNumber(form.teaBonus);
 }
 
 function calculateSubtotalB() {
@@ -140,6 +142,7 @@ function getFormData() {
         mealAllowance: formatCurrency(getNumber(form.mealAllowance)),
         attendanceBonus: formatCurrency(getNumber(form.attendanceBonus)),
         positionAllowance: formatCurrency(getNumber(form.positionAllowance)),
+        teaBonus: formatCurrency(getNumber(form.teaBonus)),
         
         weekdayOT: formatCurrency(getNumber(form.weekdayOT)),
         holidayOT: formatCurrency(getNumber(form.holidayOT)),
@@ -285,7 +288,7 @@ th {
                 <td class="text-right">${data.laborInsurance}</td>
             </tr>
             <tr>
-                <td class="text-center">伙食津貼</td>
+                <td class="text-center">外送津貼</td>
                 <td class="text-right">${data.mealAllowance}</td>
                 <td class="text-center">休假日加班費</td>
                 <td class="text-right">${data.holidayOT}</td>
@@ -307,6 +310,14 @@ th {
                 <td class="text-right">${data.unusedLeaveWage}</td>
                 <td class="text-center">勞工自願提繳退休金</td>
                 <td class="text-right">${data.voluntaryPension}</td>
+            </tr>
+            <tr>
+                <td class="text-center">問茶獎金</td>
+                <td class="text-right">${data.teaBonus}</td>
+                <td class="text-center"></td>
+                <td class="text-right"></td>
+                <td class="text-center"></td>
+                <td class="text-right"></td>
             </tr>
             <tr>
                 <td rowspan="2" class="text-center bg-light">非固定<br>支付項目</td>
