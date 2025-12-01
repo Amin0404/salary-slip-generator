@@ -3,285 +3,373 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>薪資發放明細表產生器</title>
+    <title>薪資與排班管理系統</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
-        <header class="header">
-            <h1>📄 薪資發放明細表產生器</h1>
-            <p class="subtitle">填寫資料後可匯出 PDF 格式的薪資單</p>
-        </header>
+        <!-- 切換按鈕 -->
+        <div class="mode-switcher">
+            <button id="switchModeBtn" class="switch-btn">
+                <span class="switch-icon">📅</span>
+                <span class="switch-text">切換至周排班表產生器</span>
+            </button>
+        </div>
 
-        <main class="main-content">
-            <!-- 基本資訊區塊 -->
-            <section class="form-section">
-                <h2 class="section-title">
-                    <span class="icon">📋</span>
-                    基本資訊
-                </h2>
-                <div class="form-grid basic-info">
-                    <div class="form-group">
-                        <label for="year">年份</label>
-                        <input type="number" id="year" placeholder="例：113">
-                    </div>
-                    <div class="form-group">
-                        <label for="month">月份</label>
-                        <input type="number" id="month" min="1" max="12" placeholder="例：11">
-                    </div>
-                    <div class="form-group">
-                        <label for="name">姓名</label>
-                        <input type="text" id="name" placeholder="請輸入姓名">
-                    </div>
-                    <div class="form-group">
-                        <label for="position">職位</label>
-                        <input type="text" id="position" placeholder="請輸入職位">
-                    </div>
-                    <div class="form-group">
-                        <label for="account">入帳帳號</label>
-                        <input type="text" id="account" placeholder="請輸入帳號">
-                    </div>
-                    <div class="form-group">
-                        <label for="payDate">發薪日期</label>
-                        <input type="date" id="payDate">
-                    </div>
-                </div>
-            </section>
+        <!-- 薪資發放明細表產生器 -->
+        <div id="salarySection" class="app-section active">
+            <header class="header">
+                <h1>📄 薪資發放明細表產生器</h1>
+                <p class="subtitle">填寫資料後可匯出 PDF 格式的薪資單</p>
+            </header>
 
-            <!-- 薪資結構區塊 -->
-            <section class="form-section">
-                <h2 class="section-title">
-                    <span class="icon">💰</span>
-                    約定薪資結構 (A)
-                </h2>
-                <div class="form-grid salary-structure">
-                    <div class="form-group">
-                        <label for="baseSalary">底薪</label>
-                        <input type="number" id="baseSalary" placeholder="0" class="money-input" data-group="A">
+            <main class="main-content">
+                <!-- 基本資訊區塊 -->
+                <section class="form-section">
+                    <h2 class="section-title">
+                        <span class="icon">📋</span>
+                        基本資訊
+                    </h2>
+                    <div class="form-grid basic-info">
+                        <div class="form-group">
+                            <label for="year">年份</label>
+                            <input type="number" id="year" placeholder="例：113">
+                        </div>
+                        <div class="form-group">
+                            <label for="month">月份</label>
+                            <input type="number" id="month" min="1" max="12" placeholder="例：11">
+                        </div>
+                        <div class="form-group">
+                            <label for="name">姓名</label>
+                            <input type="text" id="name" placeholder="請輸入姓名">
+                        </div>
+                        <div class="form-group">
+                            <label for="position">職位</label>
+                            <input type="text" id="position" placeholder="請輸入職位">
+                        </div>
+                        <div class="form-group">
+                            <label for="account">入帳帳號</label>
+                            <input type="text" id="account" placeholder="請輸入帳號">
+                        </div>
+                        <div class="form-group">
+                            <label for="payDate">發薪日期</label>
+                            <input type="date" id="payDate">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="mealAllowance">外送津貼</label>
-                        <input type="number" id="mealAllowance" placeholder="0" class="money-input" data-group="A">
-                    </div>
-                    <div class="form-group">
-                        <label for="attendanceBonus">全勤獎金</label>
-                        <input type="number" id="attendanceBonus" placeholder="0" class="money-input" data-group="A">
-                    </div>
-                    <div class="form-group">
-                        <label for="positionAllowance">職務津貼</label>
-                        <input type="number" id="positionAllowance" placeholder="0" class="money-input" data-group="A">
-                    </div>
-                    <div class="form-group">
-                        <label for="teaBonus">問茶獎金</label>
-                        <input type="number" id="teaBonus" placeholder="0" class="money-input" data-group="A">
-                    </div>
-                </div>
-                <div class="subtotal">
-                    <span>小計 (A)：</span>
-                    <span id="subtotalA" class="amount">$0</span>
-                </div>
-            </section>
+                </section>
 
-            <!-- 加班費區塊 -->
-            <section class="form-section">
-                <h2 class="section-title">
-                    <span class="icon">⏰</span>
-                    加班費 / 其他 (B)
-                </h2>
-                <div class="form-grid overtime">
-                    <div class="form-group">
-                        <label for="weekdayOT">平日加班費</label>
-                        <input type="number" id="weekdayOT" placeholder="0" class="money-input" data-group="B">
+                <!-- 薪資結構區塊 -->
+                <section class="form-section">
+                    <h2 class="section-title">
+                        <span class="icon">💰</span>
+                        約定薪資結構 (A)
+                    </h2>
+                    <div class="form-grid salary-structure">
+                        <div class="form-group">
+                            <label for="baseSalary">底薪</label>
+                            <input type="number" id="baseSalary" placeholder="0" class="money-input" data-group="A">
+                        </div>
+                        <div class="form-group">
+                            <label for="mealAllowance">外送津貼</label>
+                            <input type="number" id="mealAllowance" placeholder="0" class="money-input" data-group="A">
+                        </div>
+                        <div class="form-group">
+                            <label for="attendanceBonus">全勤獎金</label>
+                            <input type="number" id="attendanceBonus" placeholder="0" class="money-input" data-group="A">
+                        </div>
+                        <div class="form-group">
+                            <label for="positionAllowance">職務津貼</label>
+                            <input type="number" id="positionAllowance" placeholder="0" class="money-input" data-group="A">
+                        </div>
+                        <div class="form-group">
+                            <label for="teaBonus">問茶獎金</label>
+                            <input type="number" id="teaBonus" placeholder="0" class="money-input" data-group="A">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="holidayOT">休假日加班費</label>
-                        <input type="number" id="holidayOT" placeholder="0" class="money-input" data-group="B">
+                    <div class="subtotal">
+                        <span>小計 (A)：</span>
+                        <span id="subtotalA" class="amount">$0</span>
                     </div>
-                    <div class="form-group">
-                        <label for="restDayOT">休息日加班費</label>
-                        <input type="number" id="restDayOT" placeholder="0" class="money-input" data-group="B">
-                    </div>
-                    <div class="form-group">
-                        <label for="unusedLeaveWage">未休特別休假工資</label>
-                        <input type="number" id="unusedLeaveWage" placeholder="0" class="money-input" data-group="B">
-                    </div>
-                    <div class="form-group">
-                        <label for="expiredCompWage">届期未補休折發工資</label>
-                        <input type="number" id="expiredCompWage" placeholder="0" class="money-input" data-group="B">
-                    </div>
-                </div>
-                <div class="subtotal">
-                    <span>小計 (B)：</span>
-                    <span id="subtotalB" class="amount">$0</span>
-                </div>
-            </section>
+                </section>
 
-            <!-- 應扣項目區塊 -->
-            <section class="form-section">
-                <h2 class="section-title">
-                    <span class="icon">📉</span>
-                    應代扣項目 (C)
-                </h2>
-                <div class="form-grid deductions">
-                    <div class="form-group">
-                        <label for="laborInsurance">勞保費</label>
-                        <input type="number" id="laborInsurance" placeholder="0" class="money-input" data-group="C">
+                <!-- 加班費區塊 -->
+                <section class="form-section">
+                    <h2 class="section-title">
+                        <span class="icon">⏰</span>
+                        加班費 / 其他 (B)
+                    </h2>
+                    <div class="form-grid overtime">
+                        <div class="form-group">
+                            <label for="weekdayOT">平日加班費</label>
+                            <input type="number" id="weekdayOT" placeholder="0" class="money-input" data-group="B">
+                        </div>
+                        <div class="form-group">
+                            <label for="holidayOT">休假日加班費</label>
+                            <input type="number" id="holidayOT" placeholder="0" class="money-input" data-group="B">
+                        </div>
+                        <div class="form-group">
+                            <label for="restDayOT">休息日加班費</label>
+                            <input type="number" id="restDayOT" placeholder="0" class="money-input" data-group="B">
+                        </div>
+                        <div class="form-group">
+                            <label for="unusedLeaveWage">未休特別休假工資</label>
+                            <input type="number" id="unusedLeaveWage" placeholder="0" class="money-input" data-group="B">
+                        </div>
+                        <div class="form-group">
+                            <label for="expiredCompWage">届期未補休折發工資</label>
+                            <input type="number" id="expiredCompWage" placeholder="0" class="money-input" data-group="B">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="healthInsurance">健保費</label>
-                        <input type="number" id="healthInsurance" placeholder="0" class="money-input" data-group="C">
+                    <div class="subtotal">
+                        <span>小計 (B)：</span>
+                        <span id="subtotalB" class="amount">$0</span>
                     </div>
-                    <div class="form-group">
-                        <label for="welfareFund">職工福利金</label>
-                        <input type="number" id="welfareFund" placeholder="0" class="money-input" data-group="C">
-                    </div>
-                    <div class="form-group">
-                        <label for="voluntaryPension">勞工自願提繳退休金</label>
-                        <input type="number" id="voluntaryPension" placeholder="0" class="money-input" data-group="C">
-                    </div>
-                    <div class="form-group">
-                        <label for="personalLeave">事假扣款</label>
-                        <input type="number" id="personalLeave" placeholder="0" class="money-input" data-group="C">
-                    </div>
-                    <div class="form-group">
-                        <label for="sickLeave">病假扣款</label>
-                        <input type="number" id="sickLeave" placeholder="0" class="money-input" data-group="C">
-                    </div>
-                </div>
-                <div class="subtotal deduction-total">
-                    <span>小計 (C)：</span>
-                    <span id="subtotalC" class="amount">$0</span>
-                </div>
-            </section>
+                </section>
 
-            <!-- 實領金額 -->
-            <section class="form-section total-section">
-                <div class="net-pay">
-                    <h2>實領金額 (A)+(B)-(C)</h2>
-                    <div id="netPay" class="net-amount">$0</div>
-                </div>
-            </section>
+                <!-- 應扣項目區塊 -->
+                <section class="form-section">
+                    <h2 class="section-title">
+                        <span class="icon">📉</span>
+                        應代扣項目 (C)
+                    </h2>
+                    <div class="form-grid deductions">
+                        <div class="form-group">
+                            <label for="laborInsurance">勞保費</label>
+                            <input type="number" id="laborInsurance" placeholder="0" class="money-input" data-group="C">
+                        </div>
+                        <div class="form-group">
+                            <label for="healthInsurance">健保費</label>
+                            <input type="number" id="healthInsurance" placeholder="0" class="money-input" data-group="C">
+                        </div>
+                        <div class="form-group">
+                            <label for="welfareFund">職工福利金</label>
+                            <input type="number" id="welfareFund" placeholder="0" class="money-input" data-group="C">
+                        </div>
+                        <div class="form-group">
+                            <label for="voluntaryPension">勞工自願提繳退休金</label>
+                            <input type="number" id="voluntaryPension" placeholder="0" class="money-input" data-group="C">
+                        </div>
+                        <div class="form-group">
+                            <label for="personalLeave">事假扣款</label>
+                            <input type="number" id="personalLeave" placeholder="0" class="money-input" data-group="C">
+                        </div>
+                        <div class="form-group">
+                            <label for="sickLeave">病假扣款</label>
+                            <input type="number" id="sickLeave" placeholder="0" class="money-input" data-group="C">
+                        </div>
+                    </div>
+                    <div class="subtotal deduction-total">
+                        <span>小計 (C)：</span>
+                        <span id="subtotalC" class="amount">$0</span>
+                    </div>
+                </section>
 
-            <!-- 特別休假區塊 -->
-            <section class="form-section">
-                <h2 class="section-title">
-                    <span class="icon">🏖️</span>
-                    特別休假
-                </h2>
-                <div class="form-grid leave-info">
-                    <div class="form-group full-width">
-                        <label>請休期間</label>
-                        <div class="date-range">
-                            <input type="date" id="leaveStartDate">
-                            <span>至</span>
-                            <input type="date" id="leaveEndDate">
-                        </div>
+                <!-- 實領金額 -->
+                <section class="form-section total-section">
+                    <div class="net-pay">
+                        <h2>實領金額 (A)+(B)-(C)</h2>
+                        <div id="netPay" class="net-amount">$0</div>
                     </div>
-                    <div class="form-group">
-                        <label for="deferredLeaveDays">經過遞延的特別休假日數</label>
-                        <div class="input-with-unit">
-                            <input type="number" id="deferredLeaveDays" placeholder="0">
-                            <span class="unit">日</span>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="annualLeaveDays">今年可休的特別休假日數</label>
-                        <div class="input-with-unit">
-                            <input type="number" id="annualLeaveDays" placeholder="0">
-                            <span class="unit">日</span>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="usedLeaveDays">今年已休的特別休假日數</label>
-                        <div class="input-with-unit">
-                            <input type="number" id="usedLeaveDays" placeholder="0">
-                            <span class="unit">日</span>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="remainingLeaveDays">今年未休的特別休假日數</label>
-                        <div class="input-with-unit">
-                            <input type="number" id="remainingLeaveDays" placeholder="0">
-                            <span class="unit">日</span>
-                        </div>
-                    </div>
-                    <div class="form-group full-width">
-                        <label for="leaveDeadline">今年特別休假的請休期日</label>
-                        <input type="text" id="leaveDeadline" placeholder="例：114年6月30日">
-                    </div>
-                </div>
-            </section>
+                </section>
 
-            <!-- 加班補休區塊 -->
-            <section class="form-section">
-                <h2 class="section-title">
-                    <span class="icon">🔄</span>
-                    加班補休
-                </h2>
-                <div class="form-grid comp-info">
-                    <div class="form-group full-width">
-                        <label for="compDeadline">勞雇雙方約定之補休期限</label>
-                        <input type="text" id="compDeadline" placeholder="請輸入補休期限">
-                    </div>
-                    <div class="form-group">
-                        <label for="prevMonthComp">至上月止未休補休時數 (Ⅰ)</label>
-                        <div class="input-with-unit">
-                            <input type="number" id="prevMonthComp" placeholder="0" step="0.5">
-                            <span class="unit">小時</span>
+                <!-- 特別休假區塊 -->
+                <section class="form-section">
+                    <h2 class="section-title">
+                        <span class="icon">🏖️</span>
+                        特別休假
+                    </h2>
+                    <div class="form-grid leave-info">
+                        <div class="form-group full-width">
+                            <label>請休期間</label>
+                            <div class="date-range">
+                                <input type="date" id="leaveStartDate">
+                                <span>至</span>
+                                <input type="date" id="leaveEndDate">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="deferredLeaveDays">經過遞延的特別休假日數</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="deferredLeaveDays" placeholder="0">
+                                <span class="unit">日</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="annualLeaveDays">今年可休的特別休假日數</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="annualLeaveDays" placeholder="0">
+                                <span class="unit">日</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="usedLeaveDays">今年已休的特別休假日數</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="usedLeaveDays" placeholder="0">
+                                <span class="unit">日</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="remainingLeaveDays">今年未休的特別休假日數</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="remainingLeaveDays" placeholder="0">
+                                <span class="unit">日</span>
+                            </div>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="leaveDeadline">今年特別休假的請休期日</label>
+                            <input type="text" id="leaveDeadline" placeholder="例：114年6月30日">
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="thisMonthCompChoice">本月選擇補休時數 (Ⅱ)</label>
-                        <div class="input-with-unit">
-                            <input type="number" id="thisMonthCompChoice" placeholder="0" step="0.5">
-                            <span class="unit">小時</span>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="thisMonthCompUsed">本月已補休時數 (Ⅲ)</label>
-                        <div class="input-with-unit">
-                            <input type="number" id="thisMonthCompUsed" placeholder="0" step="0.5">
-                            <span class="unit">小時</span>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="expiredCompHours">届期未休補折發工資時數 (Ⅳ)</label>
-                        <div class="input-with-unit">
-                            <input type="number" id="expiredCompHours" placeholder="0" step="0.5">
-                            <span class="unit">小時</span>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="remainingCompHours">至本月止未休補休時數</label>
-                        <div class="input-with-unit">
-                            <input type="number" id="remainingCompHours" placeholder="0" step="0.5" readonly>
-                            <span class="unit">小時</span>
-                        </div>
-                        <small class="formula">(Ⅰ)+(Ⅱ)-(Ⅲ)-(Ⅳ)</small>
-                    </div>
-                </div>
-            </section>
+                </section>
 
-            <!-- 操作按鈕 -->
-            <div class="action-buttons">
-                <button type="button" id="previewBtn" class="btn btn-secondary">
-                    <span class="btn-icon">👁️</span>
-                    預覽
-                </button>
-                <button type="button" id="exportBtn" class="btn btn-primary">
-                    <span class="btn-icon">📥</span>
-                    匯出 PDF
-                </button>
-                <button type="button" id="clearBtn" class="btn btn-danger">
-                    <span class="btn-icon">🗑️</span>
-                    清除資料
-                </button>
-            </div>
-        </main>
+                <!-- 加班補休區塊 -->
+                <section class="form-section">
+                    <h2 class="section-title">
+                        <span class="icon">🔄</span>
+                        加班補休
+                    </h2>
+                    <div class="form-grid comp-info">
+                        <div class="form-group full-width">
+                            <label for="compDeadline">勞雇雙方約定之補休期限</label>
+                            <input type="text" id="compDeadline" placeholder="請輸入補休期限">
+                        </div>
+                        <div class="form-group">
+                            <label for="prevMonthComp">至上月止未休補休時數 (Ⅰ)</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="prevMonthComp" placeholder="0" step="0.5">
+                                <span class="unit">小時</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="thisMonthCompChoice">本月選擇補休時數 (Ⅱ)</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="thisMonthCompChoice" placeholder="0" step="0.5">
+                                <span class="unit">小時</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="thisMonthCompUsed">本月已補休時數 (Ⅲ)</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="thisMonthCompUsed" placeholder="0" step="0.5">
+                                <span class="unit">小時</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="expiredCompHours">届期未休補折發工資時數 (Ⅳ)</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="expiredCompHours" placeholder="0" step="0.5">
+                                <span class="unit">小時</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="remainingCompHours">至本月止未休補休時數</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="remainingCompHours" placeholder="0" step="0.5" readonly>
+                                <span class="unit">小時</span>
+                            </div>
+                            <small class="formula">(Ⅰ)+(Ⅱ)-(Ⅲ)-(Ⅳ)</small>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 操作按鈕 -->
+                <div class="action-buttons">
+                    <button type="button" id="previewBtn" class="btn btn-secondary">
+                        <span class="btn-icon">👁️</span>
+                        預覽
+                    </button>
+                    <button type="button" id="exportBtn" class="btn btn-primary">
+                        <span class="btn-icon">📥</span>
+                        匯出 PDF
+                    </button>
+                    <button type="button" id="clearBtn" class="btn btn-danger">
+                        <span class="btn-icon">🗑️</span>
+                        清除資料
+                    </button>
+                </div>
+            </main>
+        </div>
+
+        <!-- 周排班表產生器 -->
+        <div id="scheduleSection" class="app-section">
+            <header class="header">
+                <h1>📅 周排班表產生器</h1>
+                <p class="subtitle">建立精美的周排班表並匯出 PDF</p>
+            </header>
+
+            <main class="main-content">
+                <!-- 週期選擇 -->
+                <section class="form-section">
+                    <h2 class="section-title">
+                        <span class="icon">📆</span>
+                        選擇週期
+                    </h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="weekStartDate">週開始日期</label>
+                            <input type="date" id="weekStartDate">
+                        </div>
+                        <div class="form-group">
+                            <button type="button" id="updateWeekBtn" class="btn btn-secondary">
+                                <span class="btn-icon">🔄</span>
+                                更新週期
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 排班表 -->
+                <section class="form-section">
+                    <div class="schedule-header">
+                        <h2 class="section-title">
+                            <span class="icon">👥</span>
+                            排班表
+                        </h2>
+                        <button type="button" id="addEmployeeBtn" class="btn btn-primary">
+                            <span class="btn-icon">➕</span>
+                            新增員工
+                        </button>
+                    </div>
+                    
+                    <div class="schedule-table-container">
+                        <table id="scheduleTable" class="schedule-table">
+                            <thead>
+                                <tr>
+                                    <th class="name-col">姓名</th>
+                                    <th class="day-col" id="day0">週一<br><span class="date-display"></span></th>
+                                    <th class="day-col" id="day1">週二<br><span class="date-display"></span></th>
+                                    <th class="day-col" id="day2">週三<br><span class="date-display"></span></th>
+                                    <th class="day-col" id="day3">週四<br><span class="date-display"></span></th>
+                                    <th class="day-col" id="day4">週五<br><span class="date-display"></span></th>
+                                    <th class="day-col" id="day5">週六<br><span class="date-display"></span></th>
+                                    <th class="day-col" id="day6">週日<br><span class="date-display"></span></th>
+                                    <th class="action-col">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="scheduleTableBody">
+                                <!-- 動態生成的行會插入這裡 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 操作按鈕 -->
+                <div class="action-buttons">
+                    <button type="button" id="scheduleExportBtn" class="btn btn-primary">
+                        <span class="btn-icon">📥</span>
+                        匯出 PDF
+                    </button>
+                    <button type="button" id="scheduleClearBtn" class="btn btn-danger">
+                        <span class="btn-icon">🗑️</span>
+                        清除資料
+                    </button>
+                </div>
+            </main>
+        </div>
 
         <footer class="footer">
-            <p>© 2024 薪資發放明細表產生器 | 適用於 GitHub Pages</p>
+            <p>© 2024 薪資與排班管理系統 | 適用於 GitHub Pages</p>
         </footer>
     </div>
 
@@ -306,6 +394,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="script.js"></script>
+    <script src="schedule.js"></script>
 </body>
 </html>
-

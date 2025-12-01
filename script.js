@@ -494,6 +494,34 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
+// ===== Mode Switching =====
+const switchModeBtn = document.getElementById('switchModeBtn');
+const salarySection = document.getElementById('salarySection');
+const scheduleSection = document.getElementById('scheduleSection');
+let currentMode = 'salary'; // 'salary' or 'schedule'
+
+function switchMode() {
+    if (currentMode === 'salary') {
+        // 切換到排班表
+        salarySection.classList.remove('active');
+        scheduleSection.classList.add('active');
+        switchModeBtn.querySelector('.switch-text').textContent = '切換至薪資發放明細表產生器';
+        switchModeBtn.querySelector('.switch-icon').textContent = '📄';
+        currentMode = 'schedule';
+    } else {
+        // 切換到薪資表
+        scheduleSection.classList.remove('active');
+        salarySection.classList.add('active');
+        switchModeBtn.querySelector('.switch-text').textContent = '切換至周排班表產生器';
+        switchModeBtn.querySelector('.switch-icon').textContent = '📅';
+        currentMode = 'salary';
+    }
+}
+
+if (switchModeBtn) {
+    switchModeBtn.addEventListener('click', switchMode);
+}
+
 // ===== Initialize =====
 document.addEventListener('DOMContentLoaded', () => {
     const today = new Date();

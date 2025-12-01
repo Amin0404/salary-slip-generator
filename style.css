@@ -53,9 +53,53 @@ body {
 
 /* ===== Container ===== */
 .container {
-    max-width: 1000px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
+}
+
+/* ===== Mode Switcher ===== */
+.mode-switcher {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.switch-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: var(--shadow-md);
+}
+
+.switch-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.switch-icon {
+    font-size: 1.2rem;
+}
+
+/* ===== App Section ===== */
+.app-section {
+    display: none;
+}
+
+.app-section.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
 }
 
 /* ===== Header ===== */
@@ -574,6 +618,316 @@ body {
 .form-section:nth-child(4) { animation-delay: 0.2s; }
 .form-section:nth-child(5) { animation-delay: 0.25s; }
 .form-section:nth-child(6) { animation-delay: 0.3s; }
+
+/* ===== Schedule Table Styles ===== */
+.schedule-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.schedule-table-container {
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+.schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.schedule-table thead {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+}
+
+.schedule-table th {
+    padding: 12px 8px;
+    font-weight: 600;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 0.9rem;
+}
+
+.schedule-table .name-col {
+    min-width: 120px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.schedule-table .day-col {
+    min-width: 100px;
+}
+
+.schedule-table .date-display {
+    font-size: 0.85rem;
+    opacity: 0.9;
+    font-weight: 400;
+}
+
+.schedule-table .action-col {
+    min-width: 60px;
+}
+
+.schedule-table tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: var(--transition);
+}
+
+.schedule-table tbody tr:hover {
+    background: var(--bg-hover);
+}
+
+.schedule-table td {
+    padding: 10px 8px;
+    border: 1px solid var(--border);
+    vertical-align: middle;
+}
+
+.schedule-table .employee-name {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-input);
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.schedule-table .employee-name:focus {
+    outline: none;
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    background: var(--bg-card);
+}
+
+.schedule-table .shift-select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.schedule-table .shift-select:focus {
+    outline: none;
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.schedule-table .shift-select option[value="白"] {
+    background: #fff9c4;
+    color: #333;
+}
+
+.schedule-table .shift-select option[value="晚"] {
+    background: #e1bee7;
+    color: #333;
+}
+
+.schedule-table .shift-select option[value="休"] {
+    background: #c8e6c9;
+    color: #333;
+}
+
+.schedule-table .btn-delete {
+    background: var(--danger);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.schedule-table .btn-delete:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+
+/* 排班選擇的視覺效果 */
+.schedule-table .shift-select[value="白"] {
+    background: #fff9c4;
+    color: #333;
+}
+
+.schedule-table .shift-select[value="晚"] {
+    background: #e1bee7;
+    color: #333;
+}
+
+.schedule-table .shift-select[value="休"] {
+    background: #c8e6c9;
+    color: #333;
+}
+
+/* ===== Schedule Table Styles ===== */
+.schedule-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.schedule-table-container {
+    overflow-x: auto;
+    margin-top: 20px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+}
+
+.schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-card);
+    min-width: 800px;
+}
+
+.schedule-table thead {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+}
+
+.schedule-table th {
+    padding: 12px 8px;
+    font-weight: 600;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 0.9rem;
+}
+
+.schedule-table .name-col {
+    min-width: 120px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.schedule-table .day-col {
+    min-width: 100px;
+}
+
+.schedule-table .date-display {
+    font-size: 0.85rem;
+    opacity: 0.9;
+    font-weight: 400;
+    display: block;
+    margin-top: 4px;
+}
+
+.schedule-table .action-col {
+    min-width: 60px;
+}
+
+.schedule-table tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: var(--transition);
+}
+
+.schedule-table tbody tr:hover {
+    background: var(--bg-hover);
+}
+
+.schedule-table td {
+    padding: 10px 8px;
+    border: 1px solid var(--border);
+    vertical-align: middle;
+}
+
+.schedule-table .employee-name {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-input);
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.schedule-table .employee-name:focus {
+    outline: none;
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    background: var(--bg-card);
+}
+
+.schedule-table .shift-select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.schedule-table .shift-select:focus {
+    outline: none;
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.schedule-table .shift-select option[value="白"] {
+    background: #fff9c4;
+    color: #333;
+}
+
+.schedule-table .shift-select option[value="晚"] {
+    background: #e1bee7;
+    color: #333;
+}
+
+.schedule-table .shift-select option[value="休"] {
+    background: #c8e6c9;
+    color: #333;
+}
+
+.schedule-table .btn-delete {
+    background: var(--danger);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: var(--transition);
+    width: 100%;
+}
+
+.schedule-table .btn-delete:hover {
+    background: #dc2626;
+    transform: scale(1.05);
+}
+
+/* 排班選擇的視覺效果 */
+.schedule-table .shift-select[value="白"] {
+    background: #fff9c4;
+    color: #333;
+}
+
+.schedule-table .shift-select[value="晚"] {
+    background: #e1bee7;
+    color: #333;
+}
+
+.schedule-table .shift-select[value="休"] {
+    background: #c8e6c9;
+    color: #333;
+}
 
 /* Print styles for PDF */
 @media print {
