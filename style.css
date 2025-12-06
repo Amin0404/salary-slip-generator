@@ -913,22 +913,6 @@ body {
     transform: scale(1.05);
 }
 
-/* 排班選擇的視覺效果 */
-.schedule-table .shift-select[value="白"] {
-    background: #fff9c4;
-    color: #333;
-}
-
-.schedule-table .shift-select[value="晚"] {
-    background: #e1bee7;
-    color: #333;
-}
-
-.schedule-table .shift-select[value="休"] {
-    background: #c8e6c9;
-    color: #333;
-}
-
 /* Print styles for PDF */
 @media print {
     body {
