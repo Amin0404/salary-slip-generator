@@ -77,31 +77,19 @@ function addEmployeeRow() {
     nameInput.dataset.employeeId = employeeCounter;
     nameCell.appendChild(nameInput);
     
-    // 7天的排班選擇
+    // 7天的排班輸入
     const dayCells = [];
     for (let i = 0; i < 7; i++) {
         const dayCell = document.createElement('td');
         dayCell.className = 'day-col';
-        const select = document.createElement('select');
-        select.className = 'shift-select';
-        select.dataset.day = i;
-        select.dataset.employeeId = employeeCounter;
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'shift-input';
+        input.placeholder = '';
+        input.dataset.day = i;
+        input.dataset.employeeId = employeeCounter;
         
-        const options = [
-            { value: '', text: '--' },
-            { value: '白', text: '白' },
-            { value: '晚', text: '晚' },
-            { value: '休', text: '休' }
-        ];
-        
-        options.forEach(opt => {
-            const option = document.createElement('option');
-            option.value = opt.value;
-            option.textContent = opt.text;
-            select.appendChild(option);
-        });
-        
-        dayCell.appendChild(select);
+        dayCell.appendChild(input);
         dayCells.push(dayCell);
     }
     
@@ -154,8 +142,8 @@ function getScheduleData() {
         if (name) {
             const shifts = [];
             for (let i = 0; i < 7; i++) {
-                const select = row.querySelector(`.shift-select[data-day="${i}"]`);
-                shifts.push(select ? select.value : '');
+                const input = row.querySelector(`.shift-input[data-day="${i}"]`);
+                shifts.push(input ? input.value.trim() : '');
             }
             
             data.employees.push({
@@ -199,9 +187,9 @@ function loadScheduleData() {
                     }
                     
                     emp.shifts.forEach((shift, dayIndex) => {
-                        const select = lastRow.querySelector(`.shift-select[data-day="${dayIndex}"]`);
-                        if (select) {
-                            select.value = shift;
+                        const input = lastRow.querySelector(`.shift-input[data-day="${dayIndex}"]`);
+                        if (input) {
+                            input.value = shift;
                         }
                     });
                 });
@@ -255,8 +243,7 @@ function getSchedulePDFHtml(data, weekStart, weekEnd) {
     data.employees.forEach(emp => {
         let shiftsHtml = '';
         emp.shifts.forEach(shift => {
-            const shiftClass = shift === '白' ? 'shift-day' : shift === '晚' ? 'shift-night' : shift === '休' ? 'shift-off' : '';
-            shiftsHtml += `<td class="${shiftClass}">${shift || ''}</td>`;
+            shiftsHtml += `<td>${shift || ''}</td>`;
         });
         
         tableRows += `
@@ -320,20 +307,8 @@ th {
     font-weight: 600;
     min-width: 80px;
 }
-.shift-day {
-    background: #fff9c4;
-    color: #333;
-    font-weight: 600;
-}
-.shift-night {
-    background: #e1bee7;
-    color: #333;
-    font-weight: 600;
-}
-.shift-off {
-    background: #c8e6c9;
-    color: #333;
-    font-weight: 600;
+tbody td {
+    font-weight: 500;
 }
 </style>
 </head>
@@ -376,9 +351,9 @@ scheduleExportBtn.addEventListener('click', exportSchedulePDF);
 
 scheduleClearBtn.addEventListener('click', clearScheduleData);
 
-// 當排班選擇改變時儲存
-document.addEventListener('change', (e) => {
-    if (e.target.classList.contains('shift-select') || e.target.classList.contains('employee-name')) {
+// 當排班輸入改變時儲存
+document.addEventListener('input', (e) => {
+    if (e.target.classList.contains('shift-input') || e.target.classList.contains('employee-name')) {
         saveScheduleData();
     }
 });
