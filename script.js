@@ -5,7 +5,7 @@ const form = {
     month: document.getElementById('month'),
     name: document.getElementById('name'),
     position: document.getElementById('position'),
-    account: document.getElementById('account'),
+   account: document.getElementById('account') || { value: '' },
     payDate: document.getElementById('payDate'),
     
     // Salary Structure (A)
@@ -14,6 +14,11 @@ const form = {
     attendanceBonus: document.getElementById('attendanceBonus'),
     positionAllowance: document.getElementById('positionAllowance'),
     teaBonus: document.getElementById('teaBonus'),
+
+    // Part-time Salary (A for parttime)
+    parttimeMinutes: document.getElementById('parttimeMinutes'),
+    parttimeWage: document.getElementById('parttimeWage'),
+    parttimeTotal: document.getElementById('parttimeTotal'),    
     
     // Overtime (B)
     weekdayOT: document.getElementById('weekdayOT'),
@@ -74,6 +79,20 @@ function formatCurrency(amount) {
     return '$' + amount.toLocaleString('zh-TW');
 }
 
+function payMonthToPayDateString(value) {
+    // 允許輸入：YYYY-MM、YYYY-MM-DD、YYYY/MM/DD
+    if (!value) return '';
+
+    // 如果是 YYYY/MM/DD → 轉成 YYYY-MM-DD
+    const normalized = value.replaceAll('/', '-');
+
+    // 取前 7 碼當 YYYY-MM
+    const ym = normalized.slice(0, 7);
+
+    // 回傳固定 10 號
+    return `${ym}-10`;
+}
+
 function formatDate(dateString) {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -83,13 +102,62 @@ function formatDate(dateString) {
     return `${year}年${month}月${day}日`;
 }
 
+function isParttime() {
+    return (form.position?.value || '') === '計時';
+}
+
+function updateParttimeTotal() {
+    if (!isParttime()) return;
+
+    const minutes = parseFloat(form.parttimeMinutes?.value) || 0;
+    const wage = parseFloat(form.parttimeWage?.value) || 0;
+
+    const hours = minutes / 60;
+    const total = Math.ceil(hours * wage);   // ✅ 無條件進位
+
+    if (form.parttimeTotal) form.parttimeTotal.value = total;
+}
+
+function updateEmploymentUI() {
+    const fulltimeGroup = document.getElementById('fulltimeBaseSalaryGroup');
+    const parttimeGroup = document.getElementById('parttimeSalaryGroup');
+
+    if (!fulltimeGroup || !parttimeGroup) return;
+
+    if (isParttime()) {
+        fulltimeGroup.style.display = 'none';
+        parttimeGroup.style.display = '';
+        updateParttimeTotal();
+    } else {
+        fulltimeGroup.style.display = '';
+        parttimeGroup.style.display = 'none';
+    }
+
+    updateCalculations();
+}
+
 // ===== Calculation Functions =====
 function calculateSubtotalA() {
-    return getNumber(form.baseSalary) +
-           getNumber(form.mealAllowance) +
-           getNumber(form.attendanceBonus) +
-           getNumber(form.positionAllowance) +
-           getNumber(form.teaBonus);
+    const position = (form.position?.value || '');
+
+    // 計時：直接用 (時數 or 分鐘) * 時薪 算 base
+    let base = 0;
+    if (position === '計時') {
+    const wage = parseFloat(form.parttimeWage?.value) || 0;
+    const minutes = parseFloat(form.parttimeMinutes?.value) || 0;
+    base = (minutes / 60) * wage;
+    } else {
+        // 正職：用底薪
+        base = getNumber(form.baseSalary);
+    }
+
+    return Math.ceil(
+    base +
+    getNumber(form.mealAllowance) +
+    getNumber(form.attendanceBonus) +
+    getNumber(form.positionAllowance) +
+    getNumber(form.teaBonus)
+    );
 }
 
 function calculateSubtotalB() {
@@ -110,7 +178,11 @@ function calculateSubtotalC() {
 }
 
 function calculateNetPay() {
-    return calculateSubtotalA() + calculateSubtotalB() - calculateSubtotalC();
+    return Math.ceil(
+        calculateSubtotalA() +
+        calculateSubtotalB() -
+        calculateSubtotalC()
+    );
 }
 
 function calculateRemainingComp() {
@@ -135,8 +207,19 @@ function getFormData() {
         month: form.month.value || '○',
         name: form.name.value || '',
         position: form.position.value || '',
-        account: form.account.value || '',
-        payDate: formatDate(form.payDate.value),
+        account: (form.account?.value) || '',
+        payDate: formatDate(payMonthToPayDateString(form.payDate.value)),
+
+        showLeave: document.getElementById('toggleLeave')?.checked ?? false,
+        showComp: document.getElementById('toggleComp')?.checked ?? false,
+
+        parttimeMinutes: form.parttimeMinutes?.value || '',
+        parttimeHourMinText: minutesToHourMinText(form.parttimeMinutes?.value),
+
+        parttimeHours: form.parttimeHours?.value || '',
+        parttimeWage: form.parttimeWage?.value || '',
+        parttimeTotal: formatCurrency(parseFloat(form.parttimeTotal?.value) || 0),
+        salaryBaseDisplay: formatCurrency(isParttime() ? (parseFloat(form.parttimeTotal?.value) || 0) : getNumber(form.baseSalary)),
         
         baseSalary: formatCurrency(getNumber(form.baseSalary)),
         mealAllowance: formatCurrency(getNumber(form.mealAllowance)),
@@ -178,6 +261,16 @@ function getFormData() {
         expiredCompHours: form.expiredCompHours.value || '○',
         remainingCompHours: calculateRemainingComp() || '○'
     };
+}
+
+function minutesToHourMinText(minutesValue) {
+    const minutes = parseInt(minutesValue, 10);
+    if (!minutes || minutes <= 0) return '';
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    if (h > 0 && m > 0) return `${h}小時${m}分`;
+    if (h > 0) return `${h}小時`;
+    return `${m}分`;
 }
 
 function getPDFHtml(data) {
@@ -255,8 +348,6 @@ th {
             <td style="width:14%">${data.name}</td>
             <td class="bg-light text-center" style="width:8%"><b>職位</b></td>
             <td style="width:14%">${data.position}</td>
-            <td class="bg-light text-center" style="width:10%"><b>入帳帳號</b></td>
-            <td style="width:20%">${data.account}</td>
             <td class="bg-light text-center" style="width:10%"><b>發薪日期</b></td>
             <td style="width:16%">${data.payDate}</td>
         </tr>
@@ -280,11 +371,14 @@ th {
         </thead>
         <tbody>
             <tr>
-                <td class="text-center">底薪</td>
-                <td class="text-right">${data.baseSalary}</td>
+                <td class="text-center">${data.position === '計時' ? '計時薪資' : '底薪'}</td>
+                <td class="text-right">
+                    ${data.salaryBaseDisplay}
+                    ${data.position === '計時' ? `<div style="font-size:9px; text-align:right; margin-top:2px;">(${data.parttimeHourMinText ? data.parttimeHourMinText : (data.parttimeMinutes ? `${data.parttimeMinutes}分鐘` : '')} × ${data.parttimeWage} 元)</div>` : ``}
+                </td>
                 <td class="text-center">平日加班費</td>
                 <td class="text-right">${data.weekdayOT}</td>
-                <td class="text-center">勞保費</td>
+                <td class="text-center">就保費</td>
                 <td class="text-right">${data.laborInsurance}</td>
             </tr>
             <tr>
@@ -351,49 +445,51 @@ th {
         </tr>
     </table>
 
-    <p class="note">＊備註：貴事業單位如有實施特別休假遞延或加班補休制度，請參考下列表格使用：</p>
-    
-    <table class="small-table">
-        <tr>
-            <th colspan="2">特別休假</th>
-            <th colspan="2">加班補休</th>
-        </tr>
-        <tr>
-            <td>請休期間：${data.leavePeriod}</td>
-            <td></td>
-            <td colspan="2">勞雇雙方約定之補休期限：${data.compDeadline}</td>
-        </tr>
-        <tr>
-            <td>經過遞延的特別休假日數</td>
-            <td class="text-center">${data.deferredLeaveDays}日</td>
-            <td>至上月止未休補休時數（Ⅰ）</td>
-            <td class="text-center">${data.prevMonthComp}小時</td>
-        </tr>
-        <tr>
-            <td>今年可休的特別休假日數</td>
-            <td class="text-center">${data.annualLeaveDays}日</td>
-            <td>本月選擇補休時數（Ⅱ）</td>
-            <td class="text-center">${data.thisMonthCompChoice}小時</td>
-        </tr>
-        <tr>
-            <td>今年已休的特別休假日數</td>
-            <td class="text-center">${data.usedLeaveDays}日</td>
-            <td>本月已補休時數（Ⅲ）</td>
-            <td class="text-center">${data.thisMonthCompUsed}小時</td>
-        </tr>
-        <tr>
-            <td>今年未休的特別休假日數</td>
-            <td class="text-center">${data.remainingLeaveDays}日</td>
-            <td>届期未休補折發工資時數（Ⅳ）</td>
-            <td class="text-center">${data.expiredCompHours}小時</td>
-        </tr>
-        <tr>
-            <td>今年特別休假的請休期日</td>
-            <td class="text-center">${data.leaveDeadline}</td>
-            <td>至本月止未休補休時數（Ⅰ）+（Ⅱ）-（Ⅲ）-（Ⅳ）</td>
-            <td class="text-center">${data.remainingCompHours}小時</td>
-        </tr>
-    </table>
+    ${(data.showLeave || data.showComp) ? `
+<p class="note">＊備註：貴事業單位如有實施特別休假遞延或加班補休制度，請參考下列表格使用：</p>
+
+<table class="small-table">
+    <tr>
+        <th colspan="2">特別休假</th>
+        <th colspan="2">加班補休</th>
+    </tr>
+    <tr>
+        <td>請休期間：${data.showLeave ? data.leavePeriod : ''}</td>
+        <td></td>
+        <td colspan="2">勞雇雙方約定之補休期限：${data.showComp ? data.compDeadline : ''}</td>
+    </tr>
+    <tr>
+        <td>經過遞延的特別休假日數</td>
+        <td class="text-center">${data.showLeave ? `${data.deferredLeaveDays}日` : ''}</td>
+        <td>至上月止未休補休時數（Ⅰ）</td>
+        <td class="text-center">${data.showComp ? `${data.prevMonthComp}小時` : ''}</td>
+    </tr>
+    <tr>
+        <td>今年可休的特別休假日數</td>
+        <td class="text-center">${data.showLeave ? `${data.annualLeaveDays}日` : ''}</td>
+        <td>本月選擇補休時數（Ⅱ）</td>
+        <td class="text-center">${data.showComp ? `${data.thisMonthCompChoice}小時` : ''}</td>
+    </tr>
+    <tr>
+        <td>今年已休的特別休假日數</td>
+        <td class="text-center">${data.showLeave ? `${data.usedLeaveDays}日` : ''}</td>
+        <td>本月已補休時數（Ⅲ）</td>
+        <td class="text-center">${data.showComp ? `${data.thisMonthCompUsed}小時` : ''}</td>
+    </tr>
+    <tr>
+        <td>今年未休的特別休假日數</td>
+        <td class="text-center">${data.showLeave ? `${data.remainingLeaveDays}日` : ''}</td>
+        <td>届期未休補折發工資時數（Ⅳ）</td>
+        <td class="text-center">${data.showComp ? `${data.expiredCompHours}小時` : ''}</td>
+    </tr>
+    <tr>
+        <td>今年特別休假的請休期日</td>
+        <td class="text-center">${data.showLeave ? data.leaveDeadline : ''}</td>
+        <td>至本月止未休補休時數（Ⅰ）+（Ⅱ）-（Ⅲ）-（Ⅳ）</td>
+        <td class="text-center">${data.showComp ? `${data.remainingCompHours}小時` : ''}</td>
+    </tr>
+</table>
+` : ''}
 </div>
 </body>
 </html>`;
@@ -473,6 +569,22 @@ compInputs.forEach(input => {
     }
 });
 
+// 職位切換：正職 / 計時
+form.position?.addEventListener('change', () => {
+    updateEmploymentUI();
+    saveToLocalStorage();
+});
+
+// 計時即時計算（分鐘 + 時薪）
+[form.parttimeMinutes, form.parttimeWage].forEach(el => {
+    if (!el) return;
+    el.addEventListener('input', () => {
+        updateParttimeTotal();
+        updateCalculations();
+        saveToLocalStorage();
+    });
+});
+
 previewBtn.addEventListener('click', showPreview);
 exportBtn.addEventListener('click', exportPDF);
 clearBtn.addEventListener('click', clearForm);
@@ -525,12 +637,44 @@ if (switchModeBtn) {
 // ===== Initialize =====
 document.addEventListener('DOMContentLoaded', () => {
     const today = new Date();
-    form.payDate.value = today.toISOString().split('T')[0];
+    form.payDate.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
     form.year.value = today.getFullYear() - 1911;
     form.month.value = today.getMonth() + 1;
     updateCalculations();
     loadFromLocalStorage();
-});
+    // ===== Feature Flags: UI Hide/Show =====
+    const leaveFormSection = document.getElementById('leaveFormSection');
+    if (leaveFormSection) leaveFormSection.style.display = ENABLE_LEAVE_SECTION ? '' : 'none';
+
+    const compFormSection = document.getElementById('compFormSection');
+    if (compFormSection) compFormSection.style.display = ENABLE_COMP_SECTION ? '' : 'none';
+
+// ===== UI Toggle Logic =====
+const toggleLeave = document.getElementById('toggleLeave');
+const toggleComp  = document.getElementById('toggleComp');
+
+const leaveSection = document.getElementById('leaveFormSection');
+const compSection  = document.getElementById('compFormSection');
+
+function updateSectionVisibility() {
+    const showLeave = ENABLE_LEAVE_SECTION && toggleLeave?.checked;
+    const showComp  = ENABLE_COMP_SECTION  && toggleComp?.checked;
+
+    if (leaveSection) leaveSection.style.display = showLeave ? '' : 'none';
+    if (compSection)  compSection.style.display  = showComp  ? '' : 'none';
+}
+
+        // 初始化 checkbox 狀態
+        if (toggleLeave) toggleLeave.checked = ENABLE_LEAVE_SECTION;
+        if (toggleComp)  toggleComp.checked  = ENABLE_COMP_SECTION;
+
+        updateSectionVisibility();
+
+        // 監聽 UI 開關
+        toggleLeave?.addEventListener('change', updateSectionVisibility);
+        toggleComp?.addEventListener('change', updateSectionVisibility);
+
+    });
 
 // ===== Local Storage =====
 function saveToLocalStorage() {
@@ -563,3 +707,40 @@ function loadFromLocalStorage() {
 document.querySelectorAll('input').forEach(input => {
     input.addEventListener('change', saveToLocalStorage);
 });
+// ===== UI Toggle Logic (放在檔案最底端，確保DOM都生成了) =====
+(function initSectionToggles() {
+    const toggleLeave = document.getElementById('toggleLeave');
+    const toggleComp  = document.getElementById('toggleComp');
+
+    const leaveSection = document.getElementById('leaveFormSection');
+    const compSection  = document.getElementById('compFormSection');
+
+    // 先印出來確認有抓到
+    console.log('[toggle] elements:', { toggleLeave, toggleComp, leaveSection, compSection });
+
+    if (!toggleLeave || !toggleComp || !leaveSection || !compSection) {
+        console.warn('[toggle] 缺少元素，請檢查 id 是否一致');
+        return;
+    }
+
+    function updateSectionVisibility() {
+        // 工程開關（如果你沒有這兩個常數，就先當成 true）
+        const enableLeave = (typeof ENABLE_LEAVE_SECTION === 'undefined') ? true : ENABLE_LEAVE_SECTION;
+        const enableComp  = (typeof ENABLE_COMP_SECTION  === 'undefined') ? true : ENABLE_COMP_SECTION;
+
+        const showLeave = enableLeave && toggleLeave.checked;
+        const showComp  = enableComp  && toggleComp.checked;
+
+        leaveSection.style.display = showLeave ? '' : 'none';
+        compSection.style.display  = showComp  ? '' : 'none';
+
+        console.log('[toggle] updated:', { showLeave, showComp, enableLeave, enableComp });
+    }
+
+    // 初始化：預設先顯示 checkbox 勾選狀態（你現在是勾選的）
+    // 若工程開關是 false，也會被鎖住
+    updateSectionVisibility();
+
+    toggleLeave.addEventListener('change', updateSectionVisibility);
+    toggleComp.addEventListener('change', updateSectionVisibility);
+})();
