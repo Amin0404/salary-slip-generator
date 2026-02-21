@@ -11,6 +11,10 @@ const scheduleTableBody = document.getElementById('scheduleTableBody');
 const scheduleExportBtn = document.getElementById('scheduleExportBtn');
 const scheduleClearBtn = document.getElementById('scheduleClearBtn');
 
+// ===== Feature Flags =====
+const ENABLE_LEAVE_SECTION = true; // 特別休假（前端 + PDF）
+const ENABLE_COMP_SECTION  = true; // 加班補休（前端 + PDF）
+
 // 初始化週期
 function initializeWeek() {
     const today = new Date();
